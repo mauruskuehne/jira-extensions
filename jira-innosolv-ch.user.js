@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.3.0
+// @version     1.3.1
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @icon        https://dl.dropboxusercontent.com/u/57161259/icons/cs-ohnoes-icon.png
