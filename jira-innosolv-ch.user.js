@@ -1,13 +1,10 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.2.2
-// @namespace   https://www.khanacademy.org/profile/KnowMoreStuff/
-// @updateURL   https://openuserjs.org/meta/KnowMoreStuff/Oh_Yes!.meta.js
-// @downloadURL https://openuserjs.org/src/scripts/KnowMoreStuff/Oh_Yes!.user.js
+// @version     1.3.0
+// @namespace   https://github.com/mauruskuehne/jira-extensions/
+// @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @icon        https://dl.dropboxusercontent.com/u/57161259/icons/cs-ohnoes-icon.png
-// @homepageURL http://codeyourown.site/
-// @author      Robert Stone
-// @description Oh Yes! Oh Noes! The Error Buddy is now much less annoying on Khan Academy.
+// @author      Daniel Dähler, Maurus Kühne
 // @include     https://jira.innosolv.ch/*
 // @grant       GM_log
 // @run-at      document-idle
