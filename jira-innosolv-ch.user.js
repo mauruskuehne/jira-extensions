@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.4.0
+// @version     1.4.1
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -82,7 +82,13 @@
 
         clearInterval(commitMessageButtonTimer);
 
+        var existing = document.getElementById("commit-header-btn");
+        if(existing != null) {
+            existing.parentNode.removeChild(existing);
+        }
+
         var newBtn = document.createElement("LI");
+        newBtn.id = "commit-header-btn";
         var a = document.createElement("A");
         a.innerText = "Copy Commit Header";
         newBtn.appendChild(a);
@@ -149,6 +155,7 @@
     summaryTimer = setInterval(expandSummaries, 1000);
     commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
     document.body.addEventListener('click', function() {
+        clearInterval(commitMessageButtonTimer);
         commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
     }, true);
 
