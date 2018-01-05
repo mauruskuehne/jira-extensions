@@ -93,7 +93,17 @@
         a.title = "Commit Message Header kopieren";
 
         a.onclick = function(){
-            copyTextToClipboard("Hallo Welt");
+
+            var parentIssueSummary = document.getElementById("parent_issue_summary");
+            var subtaskNr = document.getElementById("key-val").innerText;
+            var subtaskText = document.getElementById("summary-val").innerText;
+            if(parentIssueSummary != null) {
+                var mainTaskText = parentIssueSummary.title;
+                copyTextToClipboard(subtaskNr + ": " + subtaskText + " (" + mainTaskText + ")");
+            }
+            else {
+                copyTextToClipboard(subtaskNr + ": " + subtaskText);
+            }
         };
 
         source.appendChild(newBtn);
@@ -138,5 +148,8 @@
     GM_log("Timer starting.");
     summaryTimer = setInterval(expandSummaries, 1000);
     commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
+    document.body.addEventListener('click', function() {
+        commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
+    }, true);
 
 })();
