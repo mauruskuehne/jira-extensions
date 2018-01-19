@@ -101,15 +101,19 @@
         a.onclick = function(){
 
             var parentIssueSummary = document.getElementById("parent_issue_summary");
-            var subtaskNr = document.getElementById("key-val").innerText;
-            var subtaskText = document.getElementById("summary-val").innerText;
+            var taskNr = "";
+            var taskText = "";
+
             if(parentIssueSummary != null) {
-                var mainTaskText = parentIssueSummary.title;
-                copyTextToClipboard(subtaskNr + ": " + subtaskText + " (" + mainTaskText + ")");
+                taskNr = parentIssueSummary.getAttribute("data-issue-key");
+                taskText = parentIssueSummary.title;
             }
             else {
-                copyTextToClipboard(subtaskNr + ": " + subtaskText);
+                taskNr = document.getElementById("key-val").innerText;
+                taskText = document.getElementById("summary-val").innerText;
             }
+
+            copyTextToClipboard(taskNr + ": " + taskText);
         };
 
         source.appendChild(newBtn);
