@@ -4,8 +4,8 @@
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
-// @icon        https://dl.dropboxusercontent.com/u/57161259/icons/cs-ohnoes-icon.png
-// @author      Daniel Dähler, Maurus Kühne
+// @icon        https://fuse314.github.io/ico/jira-extensions.png
+// @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
 // @include     https://jira.innosolv.ch/*
 // @grant       GM_log
 // @run-at      document-idle
@@ -90,7 +90,7 @@
         var newBtn = document.createElement("LI");
         newBtn.id = "commit-header-btn";
         var a = document.createElement("A");
-        a.innerText = "Copy Commit Header";
+        a.innerText = "Commit Header";
         newBtn.appendChild(a);
         newBtn.className = "toolbar-item";
 
@@ -140,7 +140,7 @@
                 {
                     parentLink.name = parentLink.innerText;
                 }
-                parentLink.innerText = parentLink.name + ": " + parentLink.title;
+                parentLink.innerText = parentLink.name + ": " + shortenDesc(parentLink.title,80);
             }
         }
 
@@ -151,6 +151,17 @@
         }
 
         return;
+    }
+    function shortenDesc(desc, len) {
+        if (typeof desc === 'string' || desc instanceof String) {
+          if(desc.length > len) {
+              return desc.substring(0,len)+"…";
+          } else {
+              return desc;
+          }
+        } else {
+            return desc;
+        }
     }
 
     // I don't know of a better way of dealing with the ajax than to check every second until
