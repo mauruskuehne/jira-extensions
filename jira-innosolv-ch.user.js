@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.4.2
+// @version     1.4.3
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
