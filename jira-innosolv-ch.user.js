@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.4.3
+// @version     1.4.4
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -169,8 +169,11 @@
     GM_log("Timer starting.");
     summaryTimer = setInterval(expandSummaries, 1000);
     commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
+    
     document.body.addEventListener('click', function() {
+        clearInterval(summaryTimer);
         clearInterval(commitMessageButtonTimer);
+        summaryTimer = setInterval(expandSummaries, 1000);
         commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
     }, true);
 
