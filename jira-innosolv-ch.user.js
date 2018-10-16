@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.4.4
+// @version     1.4.5
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -8,11 +8,14 @@
 // @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
 // @include     https://jira.innosolv.ch/*
 // @grant       GM_log
+// @grant       GM_addStyle
 // @run-at      document-idle
 // ==/UserScript==
 
 (function() {
     'use strict';
+
+    GM_addStyle('.aui-header .aui-header-logo img { margin-top:3px; }'); // korrigiert die vertikale Ausrichtung vom Logo im Header
 
     var summaryTimer;
     var commitMessageButtonTimer;
