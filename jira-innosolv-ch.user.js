@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.4.6
+// @version     1.5.0
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -9,6 +9,8 @@
 // @include     https://jira.innosolv.ch/*
 // @grant       GM_log
 // @grant       GM_addStyle
+// @grant       GM_getValue
+// @grant       GM_setValue
 // @run-at      document-idle
 // ==/UserScript==
 
@@ -24,16 +26,6 @@
     function copyTextToClipboard(text) {
         var textArea = document.createElement("textarea");
         textArea.style="position:fixed;top:0;left:0;width=2em;height=2em;padding=0;border=none;outline=none;boxShadow=none;background=transparent;";
-        /*textArea.style.position = 'fixed';
-        textArea.style.top = 0;
-        textArea.style.left = 0;
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
-        textArea.style.padding = 0;
-        textArea.style.border = 'none';
-        textArea.style.outline = 'none';
-        textArea.style.boxShadow = 'none';
-        textArea.style.background = 'transparent';*/
 
         textArea.value = text;
         document.body.appendChild(textArea);
@@ -59,43 +51,71 @@
         clearInterval(commitMessageButtonTimer);
 
         var existing = document.getElementById("commit-header-btn");
-        if(existing != null) {
-            existing.parentNode.removeChild(existing);
+        if(existing == null) {
+            var clickFnc = function(e) {
+                e = e || window.event;
+                var targ = e.target || e.srcElement;
+                if (targ.nodeType == 3) targ = targ.parentNode; // defeat Safari bug
+                if(!targ.hasAttribute('data-format')) { targ = targ.parentNode; } // if click event target was sub-node (i.E. span), use parent node.
+                if(targ.hasAttribute('data-format')) {
+                  var fmt = targ.getAttribute('data-format');
+    
+                  var parentIssueSummary = document.getElementById("parent_issue_summary");
+                  var taskNr = "";
+                  var taskText = "";
+    
+                  if(parentIssueSummary != null) {
+                    taskNr = parentIssueSummary.getAttribute("data-issue-key");
+                    taskText = parentIssueSummary.title;
+                  } else {
+                    taskNr = document.getElementById("key-val").innerText;
+                    taskText = document.getElementById("summary-val").innerText;
+                  }
+                  var txtToCopy = fmt.split("{0}").join(taskNr);
+                  txtToCopy = txtToCopy.split("{1}").join(taskText);
+                  copyTextToClipboard(txtToCopy);
+                } else {
+                    GM_log("ignoring click, attribute data-format not found.");
+                }
+            }
         }
 
-        var a = document.createElement("a");
-        a.id = "commit-header-btn";
-        a.className = "aui-button toolbar-trigger";
-        a.href = "#";
-        a.title = "Commit Message Header kopieren";
-        var ico = document.createElement("span");
-        ico.className = "icon aui-icon aui-icon-small aui-iconfont-copy";
-        ico.style="margin-right:4px;";
-        a.appendChild(ico);
-        var lbl = document.createElement("span");
-        lbl.className = "trigger-label";
-        lbl.innerText = "Commit Header";
-        a.appendChild(lbl);
-
-        a.onclick = function(){
-
-            var parentIssueSummary = document.getElementById("parent_issue_summary");
-            var taskNr = "";
-            var taskText = "";
-
-            if(parentIssueSummary != null) {
-                taskNr = parentIssueSummary.getAttribute("data-issue-key");
-                taskText = parentIssueSummary.title;
+        var createBtn = function(id, isMainBtn, txt, title, fmt, clFunc) {
+            var a = document.createElement("a");
+            a.id = id;
+            a.className = "aui-button toolbar-trigger";
+            a.href = "#";
+            a.title = title;
+            a.setAttribute('data-format',fmt);
+            if(isMainBtn) {
+              var ico = document.createElement("span");
+              ico.className = "icon aui-icon aui-icon-small aui-iconfont-copy";
+              ico.style="margin-right:4px;";
+              a.appendChild(ico);
             }
-            else {
-                taskNr = document.getElementById("key-val").innerText;
-                taskText = document.getElementById("summary-val").innerText;
-            }
+            var lbl = document.createElement("span");
+            lbl.className = "trigger-label";
+            lbl.innerText = txt;
+            a.appendChild(lbl);
+            a.onclick = clFunc; // onclick function
+            return a;
+        }
 
-            copyTextToClipboard(taskNr + ": " + taskText);
-        };
+        // create main button
+        var btn = createBtn("commit-header-btn", true, "Copy", "Commit Message Header kopieren", "{0}: {1}", clickFnc);
+        source.appendChild(btn);
 
-        source.appendChild(a);
+        // create additional buttons
+        var btnText = GM_getValue("extraButtonsTexts", ["No.","PV"]);
+        var btnTitles = GM_getValue("extraButtonTitles", ["Vorgangnummer kopieren", "PV Dateiname kopieren"]);
+        var btnFormats = GM_getValue("extraButtonsFormats", ["{0}","{0} PV.docx"]);
+        btnText.forEach(function(e,i){
+            var extraBtn = createBtn("commit-header-"+i, false, e, btnTitles[i], btnFormats[i], fnc);
+            source.appendChild(extraBtn);
+        });
+
+        // create "edit preferences" buttons
+        //TODO
     }
 
     function fixTableSize() {
