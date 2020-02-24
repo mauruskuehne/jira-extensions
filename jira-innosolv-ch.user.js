@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.5.0
+// @version     1.5.1
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -16,6 +16,15 @@
 
 (function() {
     'use strict';
+
+    // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
+    // example 1: no extra buttons
+    //GM_setValue("extraButtons", []);
+    // example 2: two extra buttons for "Issue No." and "PV document name")
+    //GM_setValue("extraButtons", [
+    //    {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"},
+    //    {text: "PV", title: "PV Dateiname kopieren", format: "{0} PV.docx"}
+    //]);
 
     GM_addStyle('.aui-header .aui-header-logo img { margin-top:3px; }'); // korrigiert die vertikale Ausrichtung vom Logo im Header
 
@@ -48,9 +57,11 @@
             return;
         }
 
+        var commitButtonId = "commit-header-btn";
+
         clearInterval(commitMessageButtonTimer);
 
-        var existing = document.getElementById("commit-header-btn");
+        var existing = document.getElementById(commitButtonId);
         if(existing == null) {
             var clickFnc = function(e) {
                 e = e || window.event;
@@ -59,11 +70,11 @@
                 if(!targ.hasAttribute('data-format')) { targ = targ.parentNode; } // if click event target was sub-node (i.E. span), use parent node.
                 if(targ.hasAttribute('data-format')) {
                   var fmt = targ.getAttribute('data-format');
-    
+
                   var parentIssueSummary = document.getElementById("parent_issue_summary");
                   var taskNr = "";
                   var taskText = "";
-    
+
                   if(parentIssueSummary != null) {
                     taskNr = parentIssueSummary.getAttribute("data-issue-key");
                     taskText = parentIssueSummary.title;
@@ -78,44 +89,45 @@
                     GM_log("ignoring click, attribute data-format not found.");
                 }
             }
-        }
 
-        var createBtn = function(id, isMainBtn, txt, title, fmt, clFunc) {
-            var a = document.createElement("a");
-            a.id = id;
-            a.className = "aui-button toolbar-trigger";
-            a.href = "#";
-            a.title = title;
-            a.setAttribute('data-format',fmt);
-            if(isMainBtn) {
-              var ico = document.createElement("span");
-              ico.className = "icon aui-icon aui-icon-small aui-iconfont-copy";
-              ico.style="margin-right:4px;";
-              a.appendChild(ico);
+            var createBtn = function(id, isMainBtn, txt, title, fmt, clFunc) {
+                var a = document.createElement("a");
+                a.id = id;
+                a.className = "aui-button toolbar-trigger";
+                a.href = "#";
+                a.title = title;
+                a.setAttribute('data-format',fmt);
+                if(isMainBtn) {
+                var ico = document.createElement("span");
+                ico.className = "icon aui-icon aui-icon-small aui-iconfont-copy";
+                ico.style="margin-right:4px;";
+                a.appendChild(ico);
+                }
+                var lbl = document.createElement("span");
+                lbl.className = "trigger-label";
+                lbl.innerText = txt;
+                a.appendChild(lbl);
+                a.onclick = clFunc; // onclick function
+                return a;
             }
-            var lbl = document.createElement("span");
-            lbl.className = "trigger-label";
-            lbl.innerText = txt;
-            a.appendChild(lbl);
-            a.onclick = clFunc; // onclick function
-            return a;
+
+            // create main button
+            var btn = createBtn(commitButtonId, true, "Copy", "Commit Message Header kopieren", "{0}: {1}", clickFnc);
+            source.appendChild(btn);
+
+            // create additional buttons
+            var extraButtons = GM_getValue("extraButtons", [
+                {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"},
+                {text: "PV", title: "PV Dateiname kopieren", format: "{0} PV.docx"}
+            ]);
+            extraButtons.forEach(function(e,i){
+                var extraBtn = createBtn("commit-header-"+i, false, e.text, e.title, e.format, clickFnc);
+                source.appendChild(extraBtn);
+            });
+
+            // create "edit preferences" buttons
+            //TODO
         }
-
-        // create main button
-        var btn = createBtn("commit-header-btn", true, "Copy", "Commit Message Header kopieren", "{0}: {1}", clickFnc);
-        source.appendChild(btn);
-
-        // create additional buttons
-        var btnText = GM_getValue("extraButtonsTexts", ["No.","PV"]);
-        var btnTitles = GM_getValue("extraButtonTitles", ["Vorgangnummer kopieren", "PV Dateiname kopieren"]);
-        var btnFormats = GM_getValue("extraButtonsFormats", ["{0}","{0} PV.docx"]);
-        btnText.forEach(function(e,i){
-            var extraBtn = createBtn("commit-header-"+i, false, e, btnTitles[i], btnFormats[i], fnc);
-            source.appendChild(extraBtn);
-        });
-
-        // create "edit preferences" buttons
-        //TODO
     }
 
     function fixTableSize() {
@@ -168,7 +180,7 @@
     GM_log("Timer starting.");
     summaryTimer = setInterval(expandSummaries, 1000);
     commitMessageButtonTimer = setInterval(addCopyCommitMessageHeaderButton, 1000);
-    
+
     document.body.addEventListener('click', function() {
         clearInterval(summaryTimer);
         clearInterval(commitMessageButtonTimer);
