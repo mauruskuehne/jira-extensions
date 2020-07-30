@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.5.1
+// @version     1.5.2
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -40,14 +40,14 @@
         document.body.appendChild(textArea);
         textArea.select();
 
+        var successful = false;
         try {
-            var successful = document.execCommand('copy');
-            var msg = successful ? 'successful' : 'unsuccessful';
-            console.log('Copying text command was ' + msg);
+            successful = document.execCommand('copy');
         } catch (err) {
-            console.log('Oops, unable to copy');
+            console.log(err);
         }
         document.body.removeChild(textArea);
+        return successful;
     }
 
     function addCopyCommitMessageHeaderButton() {
@@ -84,10 +84,24 @@
                   }
                   var txtToCopy = fmt.split("{0}").join(taskNr);
                   txtToCopy = txtToCopy.split("{1}").join(taskText);
-                  copyTextToClipboard(txtToCopy);
+                  var copied = copyTextToClipboard(txtToCopy);
+                  var cleanupStyle = function() {
+                    if(targ.hasAttribute('style')) {
+                      targ.removeAttribute('style');
+                    }
+                  }
+                  if(copied) {
+                    targ.setAttribute('style','background-color:lightgreen;');
+                    window.setTimeout(cleanupStyle,500);
+                  } else {
+                    targ.setAttribute('style','background-color:lightred;');
+                    window.setTimeout(cleanupStyle,500);
+                  }
                 } else {
                     GM_log("ignoring click, attribute data-format not found.");
                 }
+                e.preventDefault();
+                return false;
             }
 
             var createBtn = function(id, isMainBtn, txt, title, fmt, clFunc) {
