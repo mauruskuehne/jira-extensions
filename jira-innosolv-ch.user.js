@@ -8,6 +8,7 @@
 // @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
 // @include     https://jira.innosolv.ch/*
 // @grant       GM_log
+// @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @run-at      document-idle
@@ -24,6 +25,8 @@
     //    {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"},
     //    {text: "PV", title: "PV Dateiname kopieren", format: "{0} PV.docx"}
     //]);
+
+    GM_addStyle('#header>.aui-header.aui-dropdown2-trigger-group{border-bottom:1px solid #dedede;}'); // korrigiert dunkle Linie im Header
 
     var commitMessageButtonTimer;
 
