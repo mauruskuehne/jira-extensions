@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.5.3
+// @version     1.5.4
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -130,8 +130,7 @@
 
             // create additional buttons
             var extraButtons = GM_getValue("extraButtons", [
-                {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"},
-                {text: "PV", title: "PV Dateiname kopieren", format: "{0} PV.docx"}
+                {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"}
             ]);
             extraButtons.forEach(function(e,i){
                 var extraBtn = createBtn("commit-header-"+i, false, e.text, e.title, e.format, clickFnc);
