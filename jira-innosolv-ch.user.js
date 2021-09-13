@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.5.4
+// @version     1.5.5
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -125,12 +125,13 @@
             }
 
             // create main button
-            var btn = createBtn(commitButtonId, true, "Copy", "Commit Message Header kopieren", "{0}: {1}", clickFnc);
+            var btn = createBtn(commitButtonId, true, "Copy", "git commit Nachricht kopieren", "fix: {1} [{0}]", clickFnc);
             source.appendChild(btn);
 
             // create additional buttons
             var extraButtons = GM_getValue("extraButtons", [
-                {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"}
+                {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"},
+                {text: "alt", title: "Altes Format [Nummer]: [Titel]", format: "{0}: {1}"}
             ]);
             extraButtons.forEach(function(e,i){
                 var extraBtn = createBtn("commit-header-"+i, false, e.text, e.title, e.format, clickFnc);
