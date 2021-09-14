@@ -84,10 +84,13 @@
                   var txtToCopy = fmt.split("{0}").join(taskNr);
                   txtToCopy = txtToCopy.split("{1}").join(taskText);
                   if(txtToCopy.includes("{2}")) {
-                    var aenderungstyp = document.getElementById("customfield_10603-val").innerText;
                     var prefix = "fix";
-                    if(aenderungstyp.includes('Anforderung')) {
-                      prefix = "feat";
+                    var aenderungstyp = document.getElementById("customfield_10603-val");
+                    if(aenderungstyp) {
+                      aenderungstyp = aenderungstyp.innerText;
+                      if(aenderungstyp && aenderungstyp.includes('Anforderung')) {
+                        prefix = "feat";
+                      }
                     }
                     txtToCopy = txtToCopy.split("{2}").join(prefix);
                   }
