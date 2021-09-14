@@ -83,6 +83,14 @@
                   }
                   var txtToCopy = fmt.split("{0}").join(taskNr);
                   txtToCopy = txtToCopy.split("{1}").join(taskText);
+                  if(txtToCopy.includes("{2}")) {
+                    var aenderungstyp = document.getElementById("customfield_10603-val").innerText;
+                    var prefix = "fix";
+                    if(aenderungstyp.includes('Anforderung')) {
+                      prefix = "feat";
+                    }
+                    txtToCopy = txtToCopy.split("{2}").join(prefix);
+                  }
                   var copied = copyTextToClipboard(txtToCopy);
                   var cleanupStyle = function() {
                     if(targ.hasAttribute('style')) {
@@ -125,7 +133,7 @@
             }
 
             // create main button
-            var btn = createBtn(commitButtonId, true, "Copy", "git commit Nachricht kopieren", "fix: {1} [{0}]", clickFnc);
+            var btn = createBtn(commitButtonId, true, "Copy", "git commit Nachricht kopieren", "{2}: {1} [{0}]", clickFnc);
             source.appendChild(btn);
 
             // create additional buttons
