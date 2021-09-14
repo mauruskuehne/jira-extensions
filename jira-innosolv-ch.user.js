@@ -139,7 +139,7 @@
             // create additional buttons
             var extraButtons = GM_getValue("extraButtons", [
                 {text: "No.", title: "Vorgangnummer kopieren", format: "{0}"},
-                {text: "alt", title: "Altes Format [Nummer]: [Titel]", format: "{0}: {1}"}
+                {text: "Mig", title: "SQL Migration", format: "{0} {1}"}
             ]);
             extraButtons.forEach(function(e,i){
                 var extraBtn = createBtn("commit-header-"+i, false, e.text, e.title, e.format, clickFnc);
