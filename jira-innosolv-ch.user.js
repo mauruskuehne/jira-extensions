@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     1.5.7
+// @version     1.5.8
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
-// @download    https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
+// @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @icon        https://github.com/mauruskuehne/jira-extensions/raw/master/icon/jira-extensions.png
 // @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
-// @include     https://jira.innosolv.ch/*
+// @description Additional buttons for jira
+// @match       https://jira.innosolv.ch/*
 // @grant       GM_log
 // @grant       GM_addStyle
 // @grant       GM_getValue
