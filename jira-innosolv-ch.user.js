@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.0
+// @version     2.0.1
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -166,12 +166,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function addCopyCommitMessageHeaderButton(node) {
     const buttonStyles = ".inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0px;border-radius:3px;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;font-family:inherit;" +
       "font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;white-space:nowrap;" +
-      "background:var(--ds-background-neutral,rgba(9,30,66,0.04));cursor:pointer;height:2.28571em;line-height:2.28571em;padding:0px 10px;vertical-align:middle;width:auto;-webkit-box-pack:center;" +
-      "justify-content:center;color:var(--ds-text,#42526E)!important;}" +
+      "background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;padding:0 5px;vertical-align:middle;width:auto;-webkit-box-pack:center;" +
+      "justify-content:center;color:#0058a5;}" +
       ".inno-btn svg{vertical-align:text-bottom;width:19px;height:auto;fill:currentColor;}" +
-      ".inno-btn:hover{background:var(--ds-background-neutral-hovered,rgba(9,30,66,0.08));text-decoration:inherit;transition-duration:0s, 0.15s;color:var(--ds-text,#42526E)!important;}" +
-      ".inno-btn:focus{background:var(--ds-background-neutral,rgba(9,30,66,0.04));box-shadow:none;transition-duration:0s,0.2s;outline:none;color:var(--ds-text,#31415D)!important;}";
-    ".inno-btn-first{margin-left:4px;}";
+      ".inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;color:#0058a5;}" +
+      ".inno-btn:focus{background:rgba(0,88,165,0.15);box-shadow:none;transition-duration:0s,0.2s;outline:none;color:#0058a5;}"+
+      ".inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;margin:0 4px;}";
     const commitButtonId = "commit-header-btn";
 
     const existing = document.getElementById(commitButtonId);
@@ -201,8 +201,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         return btn;
       }
 
+      let container = document.createElement("div");
+      container.className = "inno-btn-container";
       // create main button
-      node.appendChild(createBtn(commitButtonId, true, "Msg", "git commit Nachricht kopieren", "{2}: {1} [{0}]", svg_MessageAltEdit));
+      container.appendChild(createBtn(commitButtonId, true, "Msg", "git commit Nachricht kopieren", "{2}: {1} [{0}]", svg_MessageAltEdit));
 
       // create additional buttons
       let extraButtons = GM_getValue("extraButtons", [
@@ -211,8 +213,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         { text: "Mig.", title: "SQL Migration kopieren", format: "{0} {1}", icon: svg_Data },
       ]);
       extraButtons.forEach(function (e, i) {
-        node.appendChild(createBtn("commit-header-" + i, false, e.text, e.title, e.format, e.icon));
+        container.appendChild(createBtn("commit-header-" + i, false, e.text, e.title, e.format, e.icon));
       });
+      node.appendChild(container);
 
       // create "edit preferences" buttons
       //TODO
