@@ -84,12 +84,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       || document.querySelector('.ghx-selected a')
     );
     if (!issueLink) {
-      // alert('No active issue, please select an issue first.');
+      // no active issue found
       return;
     }
     const jiraNumber = issueLink.dataset.tooltip || issueLink.innerText;
     let prefix = "fix";
-    if (jiraNumber.startsWith("EN")) {
+    if (jiraNumber.startsWith("G3")) {
+      prefix = "feat";
+    } else if (jiraNumber.startsWith("EN")) {
       const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
       if (aenderungstyp && aenderungstyp.innerText == "Anforderung") {
         prefix = "feat"
