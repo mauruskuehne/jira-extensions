@@ -11,7 +11,6 @@
 // @grant       GM_log
 // @grant       GM_getValue
 // @grant       GM_setValue
-// @require     https://code.jquery.com/jquery-3.6.1.min.js
 // @run-at      document-idle
 // ==/UserScript==
 
@@ -29,7 +28,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
  *
  */
 
- (function () {
+(function () {
   'use strict';
 
   // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
@@ -41,38 +40,35 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   //    {text: "PV", title: "PV Dateiname kopieren", format: "{0} PV.docx"}
   //]);
 
-  let commitMessageButtonTimer;
-
-  /**
-     * Copies text to the clipboard
-     * @param text
-     */
-  function copy(text) {
-    navigator.clipboard.writeText(text).then(
-      function () {
-        console.log('success, copied text.');
-      },
-      function (err) {
-        console.error('Could not copy text: ', err);
-      }
-    );
-  }
+  /*
+  svg icons source:
+  https://www.svgrepo.com/collection/boxicons-interface-icons
+  */
+  const svg_MessageAltEdit = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.586 18 12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h3.586zM5 4h14v12h-4.414L12 18.586 9.414 16H5V4z"/><path d="m12.479 7.219-4.977 4.969v1.799h1.8l4.975-4.969zm2.219-2.22 1.8 1.8-1.37 1.37-1.8-1.799z"/></svg>';
+  const svg_TargetLock = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3"/><path d="M13 4.069V2h-2v2.069A8.008 8.008 0 0 0 4.069 11H2v2h2.069A8.007 8.007 0 0 0 11 19.931V22h2v-2.069A8.007 8.007 0 0 0 19.931 13H22v-2h-2.069A8.008 8.008 0 0 0 13 4.069zM12 18c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"/></svg>';
+  const svg_Hash = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.018 3.815 15.232 8h-4.966l.716-3.815-1.964-.37L8.232 8H4v2h3.857l-.751 4H3v2h3.731l-.714 3.805 1.965.369L8.766 16h4.966l-.714 3.805 1.965.369.783-4.174H20v-2h-3.859l.751-4H21V8h-3.733l.716-3.815-1.965-.37zM14.106 14H9.141l.751-4h4.966l-.752 4z"/></svg>';
+  const svg_GitBranch = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 4C15.57 4 14 5.57 14 7.5c0 1.554 1.025 2.859 2.43 3.315-.146.932-.547 1.7-1.23 2.323-1.946 1.773-5.527 1.935-7.2 1.907V8.837c1.44-.434 2.5-1.757 2.5-3.337C10.5 3.57 8.93 2 7 2S3.5 3.57 3.5 5.5c0 1.58 1.06 2.903 2.5 3.337v6.326c-1.44.434-2.5 1.757-2.5 3.337C3.5 20.43 5.07 22 7 22s3.5-1.57 3.5-3.5c0-.551-.14-1.065-.367-1.529 2.06-.186 4.657-.757 6.409-2.35 1.097-.997 1.731-2.264 1.904-3.768C19.915 10.438 21 9.1 21 7.5 21 5.57 19.43 4 17.5 4zm-12 1.5C5.5 4.673 6.173 4 7 4s1.5.673 1.5 1.5S7.827 7 7 7s-1.5-.673-1.5-1.5zM7 20c-.827 0-1.5-.673-1.5-1.5a1.5 1.5 0 0 1 1.482-1.498l.13.01A1.495 1.495 0 0 1 7 20zM17.5 9c-.827 0-1.5-.673-1.5-1.5S16.673 6 17.5 6s1.5.673 1.5 1.5S18.327 9 17.5 9z"/></svg>';
+  const svg_Data = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
 
   /**
    * Momentarily changes button background to green, to inform the user of successful copy to clipboard
    * @param e
    */
-  function flashCopiedMessage(e) {
+  function flashCopiedMessage(e, success) {
     if (e) {
       const prevVal = this.hasAttribute('style') ? this.getAttribute('style') : null;
-      this.setAttribute('style', 'background-color:lightgreen;');
+      if (success) {
+        this.setAttribute('style', 'background-color:lightgreen;');
+      } else {
+        this.setAttribute('style', 'background-color:lightred;');
+      }
       setTimeout(() => {
         if (prevVal !== null) {
           this.setAttribute('style', prevVal);
         } else {
           this.removeAttribute('style');
         }
-      }, 500);
+      }, 1000);
     }
   }
 
@@ -93,9 +89,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
     const jiraNumber = issueLink.dataset.tooltip || issueLink.innerText;
     let prefix = "fix";
-    if(jiraNumber.startsWith("EN")) {
+    if (jiraNumber.startsWith("EN")) {
       const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
-      if(aenderungstyp && aenderungstyp.innerText == "Anforderung") {
+      if (aenderungstyp && aenderungstyp.innerText == "Anforderung") {
         prefix = "feat"
       }
     }
@@ -118,7 +114,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function getDataAndFormat(format) {
     const fmt = format || "{1} {2}";
     const { jiraNumber, title, prefix } = getData();
-    if(!jiraNumber || !title || !prefix) return;
+    if (!jiraNumber || !title || !prefix) return;
     let txtToCopy = fmt.split("{0}").join(jiraNumber);
     txtToCopy = txtToCopy.split("{1}").join(title);
     if (txtToCopy.includes("{2}")) {
@@ -127,67 +123,93 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     return txtToCopy;
   }
 
-  function buttonClicked (e) {
+  function searchParentOfType(node, name, search = 5) {
+    if (search <= 1) {
+      return node;
+    }
+    if (node && node.parentNode) {
+      const parent = node.parentNode;
+      if (parent.nodeName == name) {
+        return parent;
+      }
+      return searchParentOfType(parent, name, search - 1);
+    } else {
+      return node;
+    }
+  }
+
+  function buttonClicked(e) {
     e = e || window.event;
     let targ = e.target || e.srcElement;
     if (targ.nodeType == 3) targ = targ.parentNode; // defeat Safari bug
-    if (!targ.hasAttribute('data-format')) { targ = targ.parentNode; } // if click event target was sub-node (i.E. span), use parent node.
-    if (targ.hasAttribute('data-format')) {
+    const targBtn = searchParentOfType(targ, "BUTTON");
+    if (targBtn.hasAttribute('data-format')) {
       const fmt = targ.getAttribute('data-format');
       const txt = getDataAndFormat(fmt);
-      copy(txt);
-      flashCopiedMessage.bind(targ)(e);
-      //return txt;
+      // copy text to clipboard
+      navigator.clipboard.writeText(txt).then(
+        function () {
+          flashCopiedMessage.bind(targBtn)(e, true);
+        },
+        function (err) {
+          flashCopiedMessage.bind(targBtn)(e, false);
+        }
+      );
     } else {
       GM_log("ignoring click, attribute data-format not found.");
     }
-    e.preventDefault();
-    return false;
   }
 
 
-  function addCopyCommitMessageHeaderButton(jNode) {
-    const classes = jNode.children('button').first().attr('class');
+  function addCopyCommitMessageHeaderButton(node) {
+    const buttonStyles = ".inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0px;border-radius:3px;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;font-family:inherit;" +
+      "font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;white-space:nowrap;" +
+      "background:var(--ds-background-neutral,rgba(9,30,66,0.04));cursor:pointer;height:2.28571em;line-height:2.28571em;padding:0px 10px;vertical-align:middle;width:auto;-webkit-box-pack:center;" +
+      "justify-content:center;color:var(--ds-text,#42526E)!important;}" +
+      ".inno-btn svg{vertical-align:text-bottom;width:19px;height:auto;fill:currentColor;}" +
+      ".inno-btn:hover{background:var(--ds-background-neutral-hovered,rgba(9,30,66,0.08));text-decoration:inherit;transition-duration:0s, 0.15s;color:var(--ds-text,#42526E)!important;}" +
+      ".inno-btn:focus{background:var(--ds-background-neutral,rgba(9,30,66,0.04));box-shadow:none;transition-duration:0s,0.2s;outline:none;color:var(--ds-text,#31415D)!important;}";
+    ".inno-btn-first{margin-left:4px;}";
     const commitButtonId = "commit-header-btn";
-
-    clearInterval(commitMessageButtonTimer);
 
     const existing = document.getElementById(commitButtonId);
     if (existing == null) {
+      let style = document.createElement("style");
+      style.innerText = buttonStyles;
+      node.appendChild(style);
 
-      let createBtn = function (id, isMainBtn, txt, title, fmt) {
+      let createBtn = function (id, isMainBtn, txt, title, fmt, icon) {
         let btn = document.createElement("button");
         btn.id = id;
-        btn.className = classes;
-        btn.href = "#";
+        if (isMainBtn) {
+          btn.className = "inno-btn inno-btn-first";
+        } else {
+          btn.className = "inno-btn";
+        }
         btn.title = title;
         btn.setAttribute('data-format', fmt);
-        //if (isMainBtn) {
-        //  let ico = document.createElement("span");
-        //  ico.className = "icon aui-icon aui-icon-small aui-iconfont-copy";
-        //  ico.style = "margin-right:4px;";
-        //  btn.appendChild(ico);
-        //}
         let lbl = document.createElement("span");
-        //lbl.className = "trigger-label";
-        lbl.innerText = txt;
+        if (icon) {
+          lbl.innerHTML = icon;
+        } else {
+          lbl.innerText = txt;
+        }
         btn.appendChild(lbl);
         btn.onclick = buttonClicked; // onclick function
         return btn;
       }
 
       // create main button
-      let button = createBtn(commitButtonId, true, "📃", "git commit Nachricht kopieren", "{2}: {1} [{0}]");
-      jNode.append(button);
+      node.appendChild(createBtn(commitButtonId, true, "Msg", "git commit Nachricht kopieren", "{2}: {1} [{0}]", svg_MessageAltEdit));
 
       // create additional buttons
       let extraButtons = GM_getValue("extraButtons", [
-        { text: "🍕", title: "Vorgangnummer kopieren", format: "{0}" },
-        { text: "💩", title: "SQL Migration", format: "{0} {1}" },
-        { text: "🌲", title: "git branch name", format: "feature/{0}" }
+        { text: "No.", title: "Vorgangnummer kopieren", format: "{0}", icon: svg_Hash },
+        { text: "Branch", title: "git branch name kopieren", format: "feature/{0}", icon: svg_GitBranch },
+        { text: "Mig.", title: "SQL Migration kopieren", format: "{0} {1}", icon: svg_Data },
       ]);
       extraButtons.forEach(function (e, i) {
-        jNode.append(createBtn("commit-header-" + i, false, e.text, e.title, e.format));
+        node.appendChild(createBtn("commit-header-" + i, false, e.text, e.title, e.format, e.icon));
       });
 
       // create "edit preferences" buttons
@@ -197,18 +219,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   GM_log("Start watching for action bar.");
 
-  waitForKeyElements('[data-test-id*="status.actions-wrapper"] div', addCopyCommitMessageHeaderButton, false);
+  waitForKeyElements('[data-test-id="issue.views.issue-base.foundation.status.actions-wrapper"]', addCopyCommitMessageHeaderButton, false);
 })();
 
 
 
-/* global $ */
-
+// source: https://gist.github.com/mjblay/18d34d861e981b7785e407c3b443b99b#file-waitforkeyelements-js
 /*--- waitForKeyElements():  A utility function, for Greasemonkey scripts,
-      that detects and handles AJAXed content.
-Source: https://gist.githubusercontent.com/raw/2625891/waitForKeyElements.js
-
-      IMPORTANT: This function requires your script to have loaded jQuery.
+    that detects and handles AJAXed content. Forked for use without JQuery.
+    IMPORTANT: Without JQuery, this fork does not look into the content of
+    iframes.
 */
 /**
  *
@@ -217,27 +237,20 @@ Source: https://gist.githubusercontent.com/raw/2625891/waitForKeyElements.js
  * @param {bool} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
  * @param {string} iframeSelector If set, identifies the iFrame to search.
  */
-function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelector) {
+function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce) {
   let targetNodes, btargetsFound;
-
-  if (typeof iframeSelector == "undefined") {
-    targetNodes = $(selectorTxt);
-  } else {
-    targetNodes = $(iframeSelector).contents().find(selectorTxt);
-  }
+  targetNodes = document.querySelectorAll(selectorTxt);
 
   if (targetNodes && targetNodes.length > 0) {
     btargetsFound = true;
-    targetNodes.each(function () {
-      let jThis = $(this);
-      let alreadyFound = jThis.data('alreadyFound') || false;
-
+    targetNodes.forEach(function (element) {
+      const alreadyFound = element.dataset.found == 'alreadyFound' ? 'alreadyFound' : false;
       if (!alreadyFound) {
-        let cancelFound = actionFunction(jThis);
+        const cancelFound = actionFunction(element);
         if (cancelFound) {
           btargetsFound = false;
         } else {
-          jThis.data('alreadyFound', true);
+          element.dataset.found = 'alreadyFound';
         }
       }
     });
@@ -255,13 +268,13 @@ function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelect
   if (btargetsFound && bWaitOnce && timeControl) {
     //--- The only condition where we need to clear the timer.
     clearInterval(timeControl);
-    delete controlObj[controlKey]
+    delete controlObj[controlKey];
   }
   else {
     //--- Set a timer, if needed.
     if (!timeControl) {
       timeControl = setInterval(function () {
-        waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelector);
+        waitForKeyElements(selectorTxt, actionFunction, bWaitOnce);
       }, 300);
       controlObj[controlKey] = timeControl;
     }
