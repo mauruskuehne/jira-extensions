@@ -180,14 +180,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       style.innerText = buttonStyles;
       node.appendChild(style);
 
-      let createBtn = function (id, isMainBtn, txt, title, fmt, icon) {
+      let createBtn = function (id, txt, title, fmt, icon) {
         let btn = document.createElement("button");
         btn.id = id;
-        if (isMainBtn) {
-          btn.className = "inno-btn inno-btn-first";
-        } else {
-          btn.className = "inno-btn";
-        }
+        btn.className = "inno-btn";
         btn.title = title;
         btn.setAttribute('data-format', fmt);
         let lbl = document.createElement("span");
@@ -204,7 +200,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       let container = document.createElement("div");
       container.className = "inno-btn-container";
       // create main button
-      container.appendChild(createBtn(commitButtonId, true, "Msg", "git commit Nachricht kopieren", "{2}: {1} [{0}]", svg_MessageAltEdit));
+      container.appendChild(createBtn(commitButtonId, "Msg", "git commit Nachricht kopieren", "{2}: {1} [{0}]", svg_MessageAltEdit));
 
       // create additional buttons
       let extraButtons = GM_getValue("extraButtons", [
@@ -213,7 +209,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         { text: "Mig.", title: "SQL Migration kopieren", format: "{0} {1}", icon: svg_Data },
       ]);
       extraButtons.forEach(function (e, i) {
-        container.appendChild(createBtn("commit-header-" + i, false, e.text, e.title, e.format, e.icon));
+        container.appendChild(createBtn("commit-header-" + i, e.text, e.title, e.format, e.icon));
       });
       node.appendChild(container);
 
