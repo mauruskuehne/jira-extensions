@@ -218,9 +218,49 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
+  function addTempoIntegration(node) {
+    let style = document.createElement("style");
+    let div = document.createElement('div');
+    let span = document.createElement('span');
+    span.innerText = "Tempo";
+    div.appendChild(span);
+    node.parentNode.insertBefore(div, node.nextSibling);
+
+  }
+
+  function showTempoConfigDialog(e) {
+    window.alert("not implemented yet.");
+
+    e.preventDefault();
+    return false;
+  }
+
+  function addTempoConfigMenuItem(node) {
+    if(node.innerText == "KONTO") {
+      const parent = node.parentNode;
+      let style = document.createElement("style");
+      style.innerText = ".inno-config-lnk{display:flex;box-sizing:border-box;width:100%;min-height:40px;margin:0px;padding:8px 20px;-webkit-box-align:center;align-items:center;border:0px;font-size:14px;outline:0px;"+
+          "text-decoration:none;user-select:none;background-color:transparent;color:#0058a5;cursor:pointer;}"+
+          ".inno-config-lnk:hover{background-color:rgba(0,88,165,0.15);color:#0058a5;text-decoration:none;}"+
+          ".inno-config-lnk:focus{background-color:transparent;color:#0058a5;text-decoration:none;}";
+      parent.appendChild(style);
+      let lnk = document.createElement("a");
+      lnk.className = "inno-config-lnk";
+      lnk.href="#";
+      lnk.innerText = "⚙ Jira Extension";
+      lnk.onclick = showTempoConfigDialog;
+      parent.appendChild(lnk);
+    }
+  }
+
   GM_log("Start watching for action bar.");
 
+  // additional copy buttons
   waitForKeyElements('[data-test-id="issue.views.issue-base.foundation.status.actions-wrapper"]', addCopyCommitMessageHeaderButton, false);
+  // config menu for tempo
+  waitForKeyElements('div[data-ds--menu--heading-item="true"]', addTempoConfigMenuItem, false);
+  // tempo integration
+  waitForKeyElements('div[data-testid="create-button-wrapper"]', addTempoIntegration, false);
 })();
 
 
