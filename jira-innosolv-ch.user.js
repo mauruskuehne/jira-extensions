@@ -146,7 +146,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (targ.nodeType == 3) targ = targ.parentNode; // defeat Safari bug
     const targBtn = searchParentOfType(targ, "BUTTON");
     if (targBtn.hasAttribute('data-format')) {
-      const fmt = targ.getAttribute('data-format');
+      const fmt = targBtn.getAttribute('data-format');
       const txt = getDataAndFormat(fmt);
       // copy text to clipboard
       navigator.clipboard.writeText(txt).then(
