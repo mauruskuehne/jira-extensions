@@ -307,7 +307,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (!document.getElementById(tempoId)) {
       let style = document.createElement("style");
       style.innerText = `.${tempoId}{margin-left:8px;display:inline-flex;place-items:center;}` +
-        `.${tempoId} span{display:inline-block;padding:2px;margin:0 2px;border-radius:4px;line-height:1.1em;}` +
+        `.${tempoId} span{display:inline-block;padding:2px;margin:0 2px;border-radius:4px;` +
+        `line-height:1.1em;color:#222;}` +
         `.${tempoId} > a{color:#0058a5;text-decoration:none;padding:6px;margin:0 8px;` +
         `border-radius:3px;background:#f2f6fa;}` +
         `.${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
