@@ -38,10 +38,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   // tempo frontend link.
   const tempoLink = "https://innosolv.atlassian.net/plugins/servlet/ac/io.tempo.jira/tempo-app";
   const tempoConfigLink = tempoLink + "#!/configuration/api-integration";
+  // cache time periods for x days in local storage.
+  const periodsCacheValidForDays = 1;
+  // cache approval data for x hours in local storage.
+  const approvalCacheValidForHours = 4;
   // delay to update tempo display: jira/wiki sometimes remove/recreate the "create" button.
-  const tempoUpdateTime = 1500;
+  const tempoUpdateDelayMs = 1500;
   // setTimeout handle to avoid firing multiple times.
-  let tempoUpdateTimeout = 0;
+  let tempoUpdateTimer = 0;
   // configuration dialog id
   const extConfigDialogId = "jiraExtConfigDialog";
 
@@ -323,10 +327,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       span.title = "innoTempo: initializing…";
       span.innerText = "innoTempo…";
       node.appendChild(span);
-      if (tempoUpdateTimeout) {
-        clearTimeout(tempoUpdateTimeout);
+      if (tempoUpdateTimer) {
+        clearTimeout(tempoUpdateTimer);
       }
-      tempoUpdateTimeout = setTimeout(() => { updateTempo(span) }, tempoUpdateTime);
+      tempoUpdateTimer = setTimeout(() => { updateTempo(span) }, tempoUpdateDelayMs);
     }
   }
 
@@ -446,7 +450,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       lnk.title = "Open Tempo app";
       lnk.innerHTML = svg_Tempo;
       node.appendChild(lnk);
+      let periodsSeen = [];
       displayPeriods.forEach((p) => {
+        periodsSeen.push(getFromKey(p));
         getApprovalStatus(p, (data) => {
           if (data.statusKey == "OPEN") {
             let span = document.createElement("span");
@@ -457,11 +463,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             } else {
               span.className = "inno-red";
             }
-            span.title = `-${missing} hours`;
+            let lastUpdate = new Date(data.cache);
+            lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
+            span.title = `-${missing} hours\nLast Update: ${("0"+(lastUpdate.getHours())).slice(-2)}:${("0"+(lastUpdate.getMinutes())).slice(-2)}`;
             node.appendChild(span);
           }
         })
       });
+      window.setTimeout(() => cleanupApprovalStatus(periodsSeen), 3000);
     });
   }
 
@@ -472,7 +481,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string} withToken forces http request with this token, ignores cache.
    */
   function getTempoPeriods(now, callback, withToken) {
-    const cacheValidFor = 1; // day
     let cachedPeriods = GM_getValue("tempoPeriods", { cache: getYMD(now), periods: [] });
     let cachedDate = new Date(cachedPeriods.cache);
     if (cachedDate > now && !withToken) {
@@ -494,7 +502,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         onload: (resp) => {
           if (resp.status == 200) {
             let cacheExp = new Date();
-            cacheExp.setDate(cacheExp.getDate() + cacheValidFor);
+            cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
             GM_setValue("tempoPeriods", { cache: getYMD(cacheExp), periods: resp.response.periods });
             callback(resp.response.periods);
           } else {
@@ -513,14 +521,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {function} callback to handle response.
    */
   function getApprovalStatus(period, callback) {
-    const cacheValidFor = 4; // hours
     let approvals = getApprovalStatusAll();
-    let fromKey = period.from.replace(/-/g, '');
+    const fromKey = getFromKey(period);
     if (approvals[fromKey]) {
       let approval = approvals[fromKey];
       let cachedDate = new Date(approval.cache);
       if (cachedDate > new Date()) {
-        callback(approval.status);
+        callback(approval);
         return;
       }
     }
@@ -536,14 +543,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       onload: (resp) => {
         if (resp.status == 200) {
           let cacheExp = new Date();
-          cacheExp.setTime(cacheExp.getTime() + (cacheValidFor * 60 * 60 * 1000));
+          cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
           const ret = {
+            cache: cacheExp.toISOString(),
             required: resp.response.requiredSeconds,
             logged: resp.response.timeSpentSeconds,
             statusKey: resp.response.status.key
           };
-          approvals[fromKey] = { cache: cacheExp.toISOString(), status: ret };
-          GM_setValue("tempoApprovals", approvals);
+          saveApprovalStatus(fromKey, ret);
           callback(ret);
         } else {
           GM_log(`innoTempo: error fetching approvals.
@@ -559,6 +566,44 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function getApprovalStatusAll() {
     return GM_getValue("tempoApprovals", {});
+  }
+
+  /**
+   * Stores the approval data.
+   * @param {string} key for storage.
+   * @param {any} approval data.
+   */
+  function saveApprovalStatus(key, approval) {
+    let approvals = getApprovalStatusAll();
+    approvals[key] = approval;
+    GM_setValue("tempoApprovals", approvals);
+  }
+
+  /**
+   * Removes old data from the "tempoApprovals" local storage object.
+   * @param {Array<string>} periodsSeen periods that have been iterated through.
+   */
+  function cleanupApprovalStatus(periodsSeen) {
+    let approvals = getApprovalStatusAll();
+    let changed = false;
+    Object.keys(approvals).forEach((key, i) => {
+      if(!periodsSeen.includes(key)) {
+        approvals[key] = undefined;
+        changed = true;
+      }
+    });
+    if(changed) {
+      GM_setValue("tempoApprovals",approvals);
+    }
+  }
+
+  /**
+   * Gets the "from" key of the period for storage.
+   * @param {any} p time period.
+   * @returns {string} identification key.
+   */
+  function getFromKey(p) {
+    return p.from.replace(/-/g, '');
   }
 
   /**
