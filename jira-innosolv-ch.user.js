@@ -60,7 +60,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const svg_Hash = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.018 3.815 15.232 8h-4.966l.716-3.815-1.964-.37L8.232 8H4v2h3.857l-.751 4H3v2h3.731l-.714 3.805 1.965.369L8.766 16h4.966l-.714 3.805 1.965.369.783-4.174H20v-2h-3.859l.751-4H21V8h-3.733l.716-3.815-1.965-.37zM14.106 14H9.141l.751-4h4.966l-.752 4z"/></svg>';
   const svg_GitBranch = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 4C15.57 4 14 5.57 14 7.5c0 1.554 1.025 2.859 2.43 3.315-.146.932-.547 1.7-1.23 2.323-1.946 1.773-5.527 1.935-7.2 1.907V8.837c1.44-.434 2.5-1.757 2.5-3.337C10.5 3.57 8.93 2 7 2S3.5 3.57 3.5 5.5c0 1.58 1.06 2.903 2.5 3.337v6.326c-1.44.434-2.5 1.757-2.5 3.337C3.5 20.43 5.07 22 7 22s3.5-1.57 3.5-3.5c0-.551-.14-1.065-.367-1.529 2.06-.186 4.657-.757 6.409-2.35 1.097-.997 1.731-2.264 1.904-3.768C19.915 10.438 21 9.1 21 7.5 21 5.57 19.43 4 17.5 4zm-12 1.5C5.5 4.673 6.173 4 7 4s1.5.673 1.5 1.5S7.827 7 7 7s-1.5-.673-1.5-1.5zM7 20c-.827 0-1.5-.673-1.5-1.5a1.5 1.5 0 0 1 1.482-1.498l.13.01A1.495 1.495 0 0 1 7 20zM17.5 9c-.827 0-1.5-.673-1.5-1.5S16.673 6 17.5 6s1.5.673 1.5 1.5S18.327 9 17.5 9z"/></svg>';
   const svg_Data = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
-  const svg_Tempo = '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M9 2.02a6.98 6.98 0 1 1 0 13.96A6.98 6.98 0 0 1 9 2.02M9 18A9 9 0 1 0 9 0a9 9 0 0 0 0 18"/><path d="M11.2 6.07 8.32 8.73c-.1.09-.26.09-.36 0L6.8 7.63a.27.27 0 0 0-.36 0L5.07 8.89c-.1.1-.1.24 0 .33L8 11.93c.1.1.26.1.36 0l4.58-4.25c.1-.1.1-.24 0-.33l-1.38-1.28a.27.27 0 0 0-.36 0"/></g></svg>';
+  const svg_Tempo = '<svg width="18px" height="18px" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M9 2.02a6.98 6.98 0 1 1 0 13.96A6.98 6.98 0 0 1 9 2.02M9 18A9 9 0 1 0 9 0a9 9 0 0 0 0 18"/><path d="M11.2 6.07 8.32 8.73c-.1.09-.26.09-.36 0L6.8 7.63a.27.27 0 0 0-.36 0L5.07 8.89c-.1.1-.1.24 0 .33L8 11.93c.1.1.26.1.36 0l4.58-4.25c.1-.1.1-.24 0-.33l-1.38-1.28a.27.27 0 0 0-.36 0"/></g></svg>';
 
   const defaultButton = {
     text: "Msg",
@@ -310,15 +310,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     const tempoId = "inno-tempo";
     if (!document.getElementById(tempoId)) {
       let style = document.createElement("style");
-      style.innerText = `.${tempoId}{margin-left:8px;display:inline-flex;place-items:center;}` +
-        `.${tempoId} span{display:inline-block;padding:2px;margin:0 2px;border-radius:4px;` +
-        `line-height:1.1em;color:#222;}` +
-        `.${tempoId} > a{color:#0058a5;text-decoration:none;padding:6px;margin:0 8px;` +
-        `border-radius:3px;background:#f2f6fa;}` +
+      style.innerText = `.${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
+        `.${tempoId} span{display:inline-block;padding:0.17em;margin:0 0.17em;border-radius:0.3em;` +
+        `line-height:1.3em;color:#222;border:0.17em solid rgba(0,0,0,0);}` +
+        `.${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.4em;margin:0 0.6em;` +
+        `border-radius:0.3em;background:#f2f6fa;}` +
         `.${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
         `.${tempoId} svg{vertical-align:text-bottom;fill:currentColor;}` +
-        `.${tempoId} span.inno-orange{background-color:#FDB;border:2px solid #F96;}` +
-        `.${tempoId} span.inno-red{background-color:#FCC;border:2px solid #F77;}`;
+        `.${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
+        `.${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
+        `.${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}`;
       node.appendChild(style);
 
       let span = document.createElement('span');
@@ -421,6 +422,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Adds a leading zero if needed.
+   * @param {number} num number to add a leading zero to.
+   * @returns number with leading zero.
+   */
+  function lZero(num) {
+    return ("0" + (num)).slice(-2);
+  }
+
+  /**
    * Gathers approval data (past 3 periods) from tempo API and displays it.
    * @param {DOMNode} node container for display.
    */
@@ -455,22 +465,30 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         periodsSeen.push(getFromKey(p));
         getApprovalStatus(p, (data) => {
           if (data.statusKey == "OPEN") {
+            const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
+            const isCurrentWeek = new Date() < toDate;
             let span = document.createElement("span");
-            span.innerHTML = `${p.to.slice(-2)}.${p.to.slice(-5).slice(0, 2)}.<br>${data.statusKey}`;
+            span.innerHTML = `${toDate.getDate()}.${toDate.getMonth()+1}.<br>${data.statusKey}`;
             const missing = Math.round((data.required - data.logged) / 60 / 60);
-            if (missing < 8) {
-              span.className = "inno-orange";
+            if (isCurrentWeek) {
+              span.className = "inno-blue";
             } else {
-              span.className = "inno-red";
+              if (missing < 8) {
+                span.className = "inno-orange";
+              } else {
+                span.className = "inno-red";
+              }
             }
             let lastUpdate = new Date(data.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
-            span.title = `-${missing} hours\nLast Update: ${("0"+(lastUpdate.getHours())).slice(-2)}:${("0"+(lastUpdate.getMinutes())).slice(-2)}`;
+            span.title = (isCurrentWeek ? `Current week\n` : ``) +
+              `-${missing} hours\n` +
+              `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
             node.appendChild(span);
           }
         })
       });
-      window.setTimeout(() => cleanupApprovalStatus(periodsSeen), 3000);
+      window.setTimeout(() => cleanupApprovalStatus(periodsSeen), 10000);
     });
   }
 
@@ -587,13 +605,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     let approvals = getApprovalStatusAll();
     let changed = false;
     Object.keys(approvals).forEach((key, i) => {
-      if(!periodsSeen.includes(key)) {
+      if (!periodsSeen.includes(key)) {
         approvals[key] = undefined;
         changed = true;
       }
     });
-    if(changed) {
-      GM_setValue("tempoApprovals",approvals);
+    if (changed) {
+      GM_setValue("tempoApprovals", approvals);
     }
   }
 
@@ -620,10 +638,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns false (to avoid following the link).
    */
   function showInnoExtensionConfigDialog(e) {
-    if(!document.getElementById(extConfigDialogId)) {
+    if (!document.getElementById(extConfigDialogId)) {
       const div = document.createElement('div');
       div.setAttribute('style', `position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;` +
-        `background:rgba(0,0,0,0.4);opacity:1;`);
+        `background:rgba(0,0,0,0.4);opacity:1;font-size:12pt;`);
       div.id = extConfigDialogId;
       const style = document.createElement('style');
       style.innerText = `.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;` +
@@ -632,11 +650,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         `hr{border:1px solid #DDD;margin:10px 0;}` +
         `input{background:white;color:black;border:1px solid black;border-radius:4px;padding:10px;width:350px;}` +
         `.help{margin:15px 0;}.buttonrow{margin:10px 0}` +
-        `button{margin-right:10px;padding:10px;background:#BEF;cursor:pointer;}`;
+        `button{margin-right:10px;padding:10px;background:#EEF;cursor:pointer;}`;
       div.appendChild(style);
       const dlg = document.createElement('div');
       dlg.className = "inno-dlg";
-      
+
       const title = document.createElement('h3');
       title.className = "innotitle";
       title.innerText = "jira Extension Configuration";
@@ -644,7 +662,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       dlg.appendChild(document.createElement("hr"));
       const lbl = document.createElement('label');
       lbl.innerText = "Tempo API Token:";
-      lbl.setAttribute('for','tempoTokenInput');
+      lbl.setAttribute('for', 'tempoTokenInput');
       dlg.appendChild(lbl);
       const inp = document.createElement('input');
       inp.type = 'text';
@@ -654,22 +672,24 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       dlg.appendChild(inp);
       const a = document.createElement('a');
       a.href = tempoConfigLink;
-      a.innerText = "open tempo configuration dialog";
+      a.target = '_blank';
+      a.innerText = "open tempo configuration dialog in new tab";
       dlg.appendChild(a);
       const help = document.createElement('div');
       help.className = "help"
-      help.innerText = `open tempo settings \n➡ api integration \n➡ new token \n➡ Name='jira extension', Ablauf='5000 Tage'` +
-        `, Benutzerdefinierter Zugriff, 'Genehmigungsbereich: Genehmigungen anzeigen / Bereich für Zeiträume: Zeiträume` +
-        ` anzeigen / Bereich der Zeitnachweise: Zeitnachweise anzeigen' \n➡ Bestätigen \n➡ Kopieren`;
+      help.innerText = `open tempo settings \n➡ api integration \n➡ new token \n➡ Name='jira extension', ` +
+        `Ablauf='5000 Tage', Benutzerdefinierter Zugriff, 'Genehmigungsbereich: Genehmigungen anzeigen / ` +
+        `Bereich für Zeiträume: Zeiträume anzeigen / Bereich der Zeitnachweise: Zeitnachweise anzeigen' \n` +
+        `➡ Bestätigen \n➡ Kopieren`;
       dlg.appendChild(help);
       const btnRow = document.createElement('div');
       btnRow.className = "buttonrow";
       const btn = document.createElement('button');
       btn.innerText = "check and save";
-      btn.onclick = function(e) {
+      btn.onclick = function (e) {
         let inp = document.getElementById("tempoTokenInput");
-        checkAndStoreTempoToken(inp.value, function(success) {
-          if(success) {
+        checkAndStoreTempoToken(inp.value, function (success) {
+          if (success) {
             closeInnoExtensionConfigDialog();
           } else {
             inp.classList.add('is-invalid');
@@ -730,15 +750,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   // source: https://gist.github.com/mjblay/18d34d861e981b7785e407c3b443b99b#file-waitforkeyelements-js
   /*--- waitForKeyElements():  A utility function, for Greasemonkey scripts,
       that detects and handles AJAXed content. Forked for use without JQuery.
-      IMPORTANT: Without JQuery, this fork does not look into the content of
-      iframes.
   */
   /**
    *
    * @param {string} selectorTxt jQuery selector that specifies the desired element(s).
-   * @param {function} actionFunction code to run when elements are found. It is passed as jNode to the matched element.
+   * @param {function} actionFunction code to run when elements are found. It is passed as node to the matched element.
    * @param {bool} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
-   * @param {string} iframeSelector If set, identifies the iFrame to search.
    */
   function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce) {
     let targetNodes, btargetsFound;
@@ -784,6 +801,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
     waitForKeyElements.controlObj = controlObj;
   }
+
+  // jira-extension relevant function calls
 
   // copy buttons
   const actionSelector = 'div[data-test-id="issue.views.issue-base.foundation.status.actions-wrapper"]';
