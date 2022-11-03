@@ -394,18 +394,24 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   /**
    * Checks, if the provided token can access the tempo api, stores the token on success.
    * @param {string} token to check and store if request was successful.
-   * @param {function} callback to handle success/failure.
    */
-  function checkAndStoreTempoToken(token, callback) {
-    const now = new Date();
-    getTempoPeriods(now, (periods) => {
-      if (periods) {
-        setTempoToken(token);
-        callback(true);
-      } else {
-        callback(false);
+  function checkAndStoreTempoToken(token) {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      try {
+        const now = new Date();
+        const periods = await getTempoPeriods(now, token);
+        if (periods) {
+          setTempoToken(token);
+          resolve(true);
+        } else {
+          reject();
+        }
       }
-    }, token);
+      catch (e) {
+        reject(e);
+      }
+    });
   }
 
   /**
@@ -443,9 +449,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Gathers approval data (past 3 periods) from tempo API and displays it.
    * @param {DOMNode} node container for display.
    */
-  function getTempoData(node) {
-    const now = new Date();
-    getTempoPeriods(now, (periods) => {
+  async function getTempoData(node) {
+    try {
+      const now = new Date();
+      const periods = await getTempoPeriods(now);
       // clear node
       while (node.firstChild) {
         node.removeChild(node.lastChild);
@@ -470,15 +477,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       lnk.innerHTML = svgTempo;
       node.appendChild(lnk);
       let periodsSeen = [];
-      displayPeriods.forEach((p) => {
-        periodsSeen.push(getFromKey(p));
-        getApprovalStatus(p, (data) => {
-          if (data.statusKey == 'OPEN') {
+      try {
+        displayPeriods.forEach(async (p) => {
+          periodsSeen.push(getFromKey(p));
+          const approvalStatus = await getApprovalStatus(p);
+          if (approvalStatus.statusKey == 'OPEN') {
             const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
             const isCurrentWeek = new Date() < toDate;
             let span = document.createElement('span');
-            span.innerHTML = `${toDate.getDate()}.${toDate.getMonth() + 1}.<br>${data.statusKey}`;
-            const missing = Math.round((data.required - data.logged) / 60 / 60);
+            span.innerHTML = `${toDate.getDate()}.${toDate.getMonth() + 1}.<br>${approvalStatus.statusKey}`;
+            const missing = Math.round((approvalStatus.required - approvalStatus.logged) / 60 / 60);
             if (isCurrentWeek) {
               span.className = 'inno-blue';
             } else {
@@ -488,7 +496,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                 span.className = 'inno-red';
               }
             }
-            let lastUpdate = new Date(data.cache);
+            let lastUpdate = new Date(approvalStatus.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
             span.title = (isCurrentWeek ? 'Current week\n' : '') +
               `-${missing} hours\n` +
@@ -496,94 +504,102 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             node.appendChild(span);
           }
         });
-      });
-      window.setTimeout(() => cleanupApprovalStatus(periodsSeen), 10000);
-    });
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      cleanupApprovalStatus(periodsSeen);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   /**
    * Gets available "periods" from tempo api.
    * @param {Date} now current Date (for easeier access).
-   * @param {function} callback function to receive "periods".
    * @param {string} withToken forces http request with this token, ignores cache.
    */
-  function getTempoPeriods(now, callback, withToken) {
-    let cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
-    let cachedDate = new Date(cachedPeriods.cache);
-    if (cachedDate > now && !withToken) {
-      callback(cachedPeriods.periods);
-      return;
-    } else {
-      let oneMonthAgo = new Date();
-      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-      const pastParam = getYMD(oneMonthAgo);
-      const nowParam = getYMD(now);
-      GM_xmlhttpRequest({
-        method: 'GET',
-        url: tempoBaseUrl + `periods?from=${pastParam}&to=${nowParam}`,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${(withToken ? withToken : GM_getValue('tempoToken', ''))}`
-        },
-        responseType: 'json',
-        onload: (resp) => {
-          if (resp.status == 200) {
-            let cacheExp = new Date();
-            cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
-            GM_setValue('tempoPeriods', { cache: getYMD(cacheExp), periods: resp.response.periods });
-            callback(resp.response.periods);
-          } else {
-            GM_log(`innoTempo: error fetching periods.
+  function getTempoPeriods(now, withToken) {
+    return new Promise(function (resolve, reject) {
+      let cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
+      let cachedDate = new Date(cachedPeriods.cache);
+      if (cachedDate > now && !withToken) {
+        resolve(cachedPeriods.periods);
+        return;
+      } else {
+        let oneMonthAgo = new Date();
+        oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+        const pastParam = getYMD(oneMonthAgo);
+        const nowParam = getYMD(now);
+        GM_xmlhttpRequest({
+          method: 'GET',
+          url: tempoBaseUrl + `periods?from=${pastParam}&to=${nowParam}`,
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${(withToken ? withToken : GM_getValue('tempoToken', ''))}`
+          },
+          responseType: 'json',
+          onload: (resp) => {
+            if (resp.status == 200) {
+              let cacheExp = new Date();
+              cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
+              GM_setValue('tempoPeriods', { cache: getYMD(cacheExp), periods: resp.response.periods });
+              resolve(resp.response.periods);
+            } else {
+              GM_log(`innoTempo: error fetching periods.
             status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
-            callback(undefined);
+              reject(resp.status);
+            }
           }
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   /**
    * Gets approval status of one period.
    * @param {period} period current period.
-   * @param {function} callback to handle response.
    */
-  function getApprovalStatus(period, callback) {
-    let approvals = getApprovalStatusAll();
-    const fromKey = getFromKey(period);
-    if (approvals[fromKey]) {
-      let approval = approvals[fromKey];
-      let cachedDate = new Date(approval.cache);
-      if (cachedDate > new Date()) {
-        callback(approval);
-        return;
-      }
-    }
-    GM_xmlhttpRequest({
-      method: 'GET',
-      url: tempoBaseUrl + `timesheet-approvals/user/${GM_getValue('jiraUserId', '')}` +
-        `?from=${period.from}&to=${period.to}`,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${GM_getValue('tempoToken', '')}`
-      },
-      responseType: 'json',
-      onload: (resp) => {
-        if (resp.status == 200) {
-          let cacheExp = new Date();
-          cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
-          const ret = {
-            cache: cacheExp.toISOString(),
-            required: resp.response.requiredSeconds,
-            logged: resp.response.timeSpentSeconds,
-            statusKey: resp.response.status.key
-          };
-          saveApprovalStatus(fromKey, ret);
-          callback(ret);
-        } else {
-          GM_log(`innoTempo: error fetching approvals.
-          status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
+  function getApprovalStatus(period) {
+    return new Promise(function (resolve, reject) {
+      let approvals = getApprovalStatusAll();
+      const fromKey = getFromKey(period);
+      if (approvals[fromKey]) {
+        let approval = approvals[fromKey];
+        let cachedDate = new Date(approval.cache);
+        if (cachedDate > new Date()) {
+          resolve(approval);
+          return;
         }
       }
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: tempoBaseUrl + `timesheet-approvals/user/${GM_getValue('jiraUserId', '')}` +
+          `?from=${period.from}&to=${period.to}`,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${GM_getValue('tempoToken', '')}`
+        },
+        responseType: 'json',
+        onload: (resp) => {
+          if (resp.status == 200) {
+            let cacheExp = new Date();
+            cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
+            const ret = {
+              cache: cacheExp.toISOString(),
+              required: resp.response.requiredSeconds,
+              logged: resp.response.timeSpentSeconds,
+              statusKey: resp.response.status.key
+            };
+            saveApprovalStatus(fromKey, ret);
+            resolve(ret);
+          } else {
+            GM_log(`innoTempo: error fetching approvals.
+          status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
+            reject(resp);
+          }
+        }
+      });
     });
   }
 
@@ -694,15 +710,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       btnRow.className = 'buttonrow';
       const btn = document.createElement('button');
       btn.innerText = 'check and save';
-      btn.onclick = function () {
-        let inp = document.getElementById('tempoTokenInput');
-        checkAndStoreTempoToken(inp.value, function (success) {
+      btn.onclick = async function () {
+        try {
+          let inp = document.getElementById('tempoTokenInput');
+          if(inp.classList.contains('is-invalid')) {
+            inp.classList.remove('is-invalid');
+          }
+          const success = await checkAndStoreTempoToken(inp.value);
           if (success) {
             closeInnoExtensionConfigDialog();
           } else {
             inp.classList.add('is-invalid');
           }
-        });
+        } catch (e) {
+          inp.classList.add('is-invalid');
+        }
       };
       btnRow.appendChild(btn);
       const close = document.createElement('button');
