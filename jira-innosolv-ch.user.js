@@ -49,6 +49,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   let tempoUpdateTimer = 0;
   // configuration dialog id
   const extConfigDialogId = 'jiraExtConfigDialog';
+  const extConfigDialogEditButtonId = 'jiraExtConfigDialogEditButtonDialog';
   // disable extension for these urls
   const disabledUrls = ['/wiki/', '/plugins/'];
 
@@ -236,16 +237,76 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
+  /**
+   * Click event for copy buttons in preview mode.
+   * @param {Event} e click event
+   */
   function buttonClickedPreview(e) {
     e = e || window.event;
     let targ = e.target || e.srcElement;
     if (targ.nodeType == 3) targ = targ.parentNode; // defeat Safari bug
     const targBtn = searchParentOfType(targ, 'BUTTON');
-    if (targBtn.hasAttribute('data-buttondef')) {
-      const buttonDef = targBtn.getAttribute('data-buttondef');
-      // load button definition in "edit button" dialog...
-      window.alert('edit button not implemented yet.');
+    const editDialog = document.getElementById(extConfigDialogEditButtonId);
+    if(!editDialog) {
+      console.error('jira-innosolv-extensions: edit dialog is not open, ignoring PREVIEW click.');
     }
+    if(targBtn.hasAttribute('data-editable') &&
+      targBtn.getAttribute('data-editable') === 'true' &&
+      targBtn.hasAttribute('data-buttondef')
+    ) {
+      const buttonDef = JSON.parse(targBtn.getAttribute('data-buttondef'));
+      makeButtonEditForm(editDialog, buttonDef);
+    } else {
+      makeButtonEditForm(editDialog, undefined, 'Button ist nicht bearbeitbar oder besitzt keine Definition. (Erster Button kann nicht geändert werden!)');
+    }
+  }
+
+  /**
+   * Creates an edit form for a custom button.
+   * @param {DOMNode} node container to add the edit form or error message to.
+   * @param {{text: string, title: string, format: string, icon: string}|undefined} buttonDefinition definition of custom button.
+   * @param {string|undefined} message error message to display.
+   */
+  function makeButtonEditForm(node, buttonDefinition, message) {
+    // clean edit dialog children
+    while(node.firstChild) {
+      node.removeChild(node.lastChild);
+    }
+    if(message) {
+      let errDiv = document.createElement('div');
+      errDiv.className = 'is-error';
+      let errMsg = document.createElement('p');
+      errMsg.innerText = message;
+      errDiv.appendChild(errMsg);
+      node.appendChild(errDiv);
+    } else {
+      let editDiv = document.createElement('div');
+      editDiv.className = 'editForm';
+      addLabelAndInput(editDiv, 'buttonText', 'Text', buttonDefinition.text);
+      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title);
+      addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format);
+      addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
+      node.appendChild(editDiv);
+    }
+  }
+
+  /**
+   * Adds a label and input element to the (button-) edit dialog.
+   * @param {DOMNode} node container to add the label and input to.
+   * @param {string} id node id for input element.
+   * @param {string} title of the label.
+   * @param {string} value of the input element.
+   */
+  function addLabelAndInput(node, id, title, value) {
+    let label = document.createElement('label');
+    label.setAttribute('for', id);
+    label.innerText = title + ':';
+    node.appendChild(label);
+    let input = document.createElement('input');
+    input.type = 'text';
+    input.id = id;
+    input.value = value;
+    node.appendChild(input);
   }
 
 
@@ -290,6 +351,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         btn.appendChild(lbl);
         if (preview) {
           btn.setAttribute('data-buttondef', JSON.stringify(buttondef));
+          btn.setAttribute('data-editable', id !== commitButtonId);
           btn.onclick = buttonClickedPreview; // onclick function for preview window
         } else {
           btn.onclick = buttonClicked; // onclick function
@@ -522,7 +584,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string} withToken forces http request with this token, ignores cache.
    */
   function getTempoPeriods(now, withToken) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       let cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
       let cachedDate = new Date(cachedPeriods.cache);
       if (cachedDate > now && !withToken) {
@@ -563,7 +625,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {period} period current period.
    */
   function getApprovalStatus(period) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       let approvals = getApprovalStatusAll();
       const fromKey = getFromKey(period);
       if (approvals[fromKey]) {
@@ -665,19 +727,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function showInnoExtensionConfigDialog(e) {
     if (!document.getElementById(extConfigDialogId)) {
-      const div = document.createElement('div');
-      div.setAttribute('style', 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
+      const background = document.createElement('div');
+      background.setAttribute('style', 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
         'background:rgba(0,0,0,0.4);opacity:1;font-size:12pt;');
-      div.id = extConfigDialogId;
+      background.id = extConfigDialogId;
       const style = document.createElement('style');
       style.innerText = '.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;' +
         'background:#FFF;border-radius:15px;border:2px solid #36D;}' +
         '.innotitle{font-size:1.6rem;padding-top:10px;margin-bottom:1rem;}' +
         'hr{border:1px solid #DDD;margin:10px 0;}' +
+        'h4{margin-top:0;margin-bottom:1rem;}' +
         'input{background:white;color:black;border:1px solid black;border-radius:4px;padding:10px;width:350px;}' +
         '.help{margin:15px 0;}.buttonrow{margin:10px 0}' +
+        '.is-invalid{border:2px solid #f00;}' +
         'button{margin-right:10px;padding:10px;background:#EEF;cursor:pointer;}';
-      div.appendChild(style);
+      background.appendChild(style);
       const dlg = document.createElement('div');
       dlg.className = 'inno-dlg';
 
@@ -686,6 +750,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       title.innerText = 'jira Extension Configuration';
       dlg.appendChild(title);
       dlg.appendChild(document.createElement('hr'));
+      const tokenTitle = document.createElement('h4');
+      tokenTitle.innerText = 'Tempo integration';
+      dlg.appendChild(tokenTitle);
       const lbl = document.createElement('label');
       lbl.innerText = 'Tempo API Token:';
       lbl.setAttribute('for', 'tempoTokenInput');
@@ -734,9 +801,19 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       close.onclick = closeInnoExtensionConfigDialog;
       btnRow.appendChild(close);
       dlg.appendChild(btnRow);
-      div.click = closeInnoExtensionConfigDialog;
-      div.appendChild(dlg);
-      document.body.append(div);
+      dlg.appendChild(document.createElement('hr'));
+      const buttonTitle = document.createElement('h4');
+      buttonTitle.innerText = 'Edit Buttons (preview)';
+      dlg.appendChild(buttonTitle);
+      let previewDiv = document.createElement('div');
+      dlg.appendChild(previewDiv);
+      addCopyButtons(previewDiv, true);
+      let editDlgDiv = document.createElement('div');
+      editDlgDiv.id = extConfigDialogEditButtonId;
+      dlg.appendChild(editDlgDiv);
+      background.click = closeInnoExtensionConfigDialog;
+      background.appendChild(dlg);
+      document.body.append(background);
     }
 
     e.preventDefault();
