@@ -141,15 +141,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       return;
     }
     const jiraNumber = issueLink.dataset.tooltip || issueLink.innerText;
-    let prefix = 'fix';
-    if (jiraNumber.startsWith('G3')) {
-      prefix = 'feat';
-    } else if (jiraNumber.startsWith('EN')) {
-      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
-      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
-        prefix = 'feat';
-      }
-    }
+
     const title = (
       // kanban view with ticket details in a modal
       document.querySelector('[data-test-id*="summary.heading"]')
@@ -158,6 +150,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       // backlog view, detail view
       || Array.from(document.querySelectorAll('h1')).pop()
     ).innerText;
+
+    let prefix = 'fix';
+    if (jiraNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
+      prefix = 'feat';
+    } else if (jiraNumber.startsWith('EN')) {
+      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
+      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
+        prefix = 'feat';
+      }
+    }
 
     return {
       jiraNumber,
