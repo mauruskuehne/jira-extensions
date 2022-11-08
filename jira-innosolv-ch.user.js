@@ -955,7 +955,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {DOMNode} node container to add configuration button.
    */
   function addInnoExtensionConfigMenuItem(node) {
-    if (node.innerText == 'KONTO') {
+    const headerText = node.innerText.toUpperCase();
+    if (headerText == 'KONTO' || headerText == 'ACCOUNT') {
       const configId = 'inno-config-lnk';
       if (!document.getElementById(configId)) {
         const parent = node.parentNode;
@@ -974,7 +975,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         lnk.onclick = showInnoExtensionConfigDialog;
         parent.appendChild(lnk);
       }
-    } else if (node.innerText == 'JIRA') {
+    } else if (headerText == 'JIRA') {
       if (GM_getValue('jiraUserId', '') == '') {
         const link = node.nextSibling;
         let match;
