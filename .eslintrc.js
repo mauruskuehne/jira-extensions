@@ -3,7 +3,10 @@ module.exports = {
     'browser': true,
     'es2021': true
   },
-  'extends': 'eslint:recommended',
+  'extends': [
+    'eslint:recommended',
+    'plugin:jsdoc/recommended'
+  ],
   'overrides': [
   ],
   'parserOptions': {
@@ -29,9 +32,19 @@ module.exports = {
     'no-unused-vars': [
       'warn',
       {
-        'vars':'all',
-        'args':'after-used'
+        'vars': 'all',
+        'args': 'after-used'
+      }
+    ],
+    'max-len': [
+      'error', {
+        'code': 120,
+        'tabWidth': 2,
+        'ignorePattern': '^.*<svg.*$'
       }
     ]
-  }
+  },
+  'plugins': [
+    'jsdoc'
+  ]
 };
