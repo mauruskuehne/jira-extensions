@@ -29,9 +29,13 @@ module.exports = {
     'no-unused-vars': [
       'warn',
       {
-        'vars':'all',
-        'args':'after-used'
+        'vars': 'all',
+        'args': 'after-used'
       }
+    ],
+    'max-len': [
+      'error',
+      [120, 2, {ignorePattern: '/^.*<svg.*$/'}]
     ]
   }
 };
