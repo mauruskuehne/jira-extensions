@@ -284,14 +284,22 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       
       makeButtonEditForm(editDialog, buttonDef, undefined, targBtn.id);
     } else {
-      makeButtonEditForm(editDialog, undefined, 'Button ist nicht bearbeitbar oder besitzt keine Definition. (Erster Button kann nicht geändert werden!)', targBtn.id);
+      makeButtonEditForm(
+        editDialog,
+        undefined,
+        'Button ist nicht bearbeitbar oder besitzt keine Definition. (Erster Button kann nicht geändert werden!)',
+        targBtn.id);
     }
   }
 
   /**
+   * Button definition
+   * @typedef {text: string, title: string, format: string, icon: string} buttonDefinition
+   */
+  /**
    * Creates an edit form for a custom button.
    * @param {DOMNode} node container to add the edit form or error message to.
-   * @param {{text: string, title: string, format: string, icon: string}|undefined} buttonDefinition definition of custom button.
+   * @param {buttonDefinition|undefined} buttonDefinition definition of button.
    * @param {string|undefined} message error message to display.
    * @param {string|undefined} id of active button.
    */
@@ -364,7 +372,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
       'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
       'white-space:nowrap;background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;' +
-      'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;color:#0058a5;}' +
+      'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;' +
+      'color:#0058a5;}' +
       '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
       '.inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;' +
       'color:#0058a5;}' +
@@ -372,7 +381,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       'color:#0058a5;}' +
       '.editing{border:0.1em solid #F00;}' +
       '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
-      'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;margin:0 0.43em;}';
+      'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
+      'margin:0 0.43em;}';
 
     const commitButtonId = preview ? 'commit-header-btn' : 'commit-header-btn-preview';
     if (!document.getElementById(commitButtonId)) {
@@ -427,21 +437,20 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     const tempoId = 'inno-tempo';
     if (!document.getElementById(tempoId)) {
       let style = document.createElement('style');
-      style.innerText = `.${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
-        `.${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;` +
+      style.innerText = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
+        `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;` +
         'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;text-align:center;}' +
-        `.${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
+        `#${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
         'border-radius:0.3em;background:#f2f6fa;}' +
-        `.${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
-        `.${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
-        `.${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
-        `.${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
-        `.${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}`;
+        `#${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
+        `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
+        `#${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
+        `#${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
+        `#${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}`;
       node.appendChild(style);
 
       let span = document.createElement('span');
       span.id = tempoId;
-      span.className = tempoId;
       span.title = 'innoTempo: initializing…';
       span.innerText = 'innoTempo…';
       node.appendChild(span);
