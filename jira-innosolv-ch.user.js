@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.2
+// @version     2.0.3
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -50,6 +50,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   // configuration dialog id
   const extConfigDialogId = 'jiraExtConfigDialog';
   const extConfigDialogEditButtonId = 'jiraExtConfigDialogEditButtonDialog';
+  const extConfigDialogTempoDetailsId = 'jiraExtConfigDialogTempoDetails';
   // disable extension for these urls
   const disabledUrls = ['/wiki/', '/plugins/'];
 
@@ -190,11 +191,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Gets the parent node with nodeName == @name
    * @param {DOMNode} node to search parent
    * @param {string} name what to search for
-   * @param {number} search how many levels to search recursively
+   * @param {number} search current search depth
    * @returns {DOMNode} parent node matching the name, or last node if not found.
    */
-  function searchParentOfType(node, name, search = 5) {
-    if (search <= 1) {
+  function searchParentOfType(node, name, search = 0) {
+    // current node matches.
+    if (search == 0 && node.nodeName == name) {
+      return node;
+    }
+    // break condition (max depth = 5)
+    if (search >= 4) {
       return node;
     }
     if (node && node.parentNode) {
@@ -202,8 +208,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       if (parent.nodeName == name) {
         return parent;
       }
-      return searchParentOfType(parent, name, search - 1);
+      return searchParentOfType(parent, name, search + 1);
     } else {
+      // either node or parentNode is empty
       return node;
     }
   }
@@ -238,6 +245,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Adds a class to the classList of the node and removes this class from any siblings that have it assigned.
+   * @param {DOMNode} node to handle.
+   * @param {string} className to clear from siblings and add to node.
+   */
+  function setClassAndRemoveFromSiblings(node, className) {
+    const matchingSiblings = node.parentNode.getElementsByClassName(className);
+    if(matchingSiblings.length > 0) {
+      for(let i = 0;i<matchingSiblings.length;i++) {
+        matchingSiblings[i].classList.remove(className);
+      }
+    }
+    node.classList.add(className);
+  }
+
+  /**
    * Click event for copy buttons in preview mode.
    * @param {Event} e click event
    */
@@ -250,14 +272,19 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if(!editDialog) {
       console.error('jira-innosolv-extensions: edit dialog is not open, ignoring PREVIEW click.');
     }
+    // clear 'editing' class from all buttons, add class to currently clicked button
+    if(targBtn.hasAttribute('data-buttondef')) {
+      setClassAndRemoveFromSiblings(targBtn, 'editing');
+    }
     if(targBtn.hasAttribute('data-editable') &&
       targBtn.getAttribute('data-editable') === 'true' &&
       targBtn.hasAttribute('data-buttondef')
     ) {
       const buttonDef = JSON.parse(targBtn.getAttribute('data-buttondef'));
-      makeButtonEditForm(editDialog, buttonDef);
+      
+      makeButtonEditForm(editDialog, buttonDef, undefined, targBtn.id);
     } else {
-      makeButtonEditForm(editDialog, undefined, 'Button ist nicht bearbeitbar oder besitzt keine Definition. (Erster Button kann nicht geändert werden!)');
+      makeButtonEditForm(editDialog, undefined, 'Button ist nicht bearbeitbar oder besitzt keine Definition. (Erster Button kann nicht geändert werden!)', targBtn.id);
     }
   }
 
@@ -266,11 +293,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {DOMNode} node container to add the edit form or error message to.
    * @param {{text: string, title: string, format: string, icon: string}|undefined} buttonDefinition definition of custom button.
    * @param {string|undefined} message error message to display.
+   * @param {string|undefined} id of active button.
    */
-  function makeButtonEditForm(node, buttonDefinition, message) {
+  function makeButtonEditForm(node, buttonDefinition, message, id) {
     // clean edit dialog children
     while(node.firstChild) {
       node.removeChild(node.lastChild);
+    }
+    if(node.hasAttribute('data-editing-id')) {
+      node.removeAttribute('data-editing-id');
     }
     if(message) {
       let errDiv = document.createElement('div');
@@ -280,12 +311,24 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       errDiv.appendChild(errMsg);
       node.appendChild(errDiv);
     } else {
+      node.setAttribute('data-editing-id', id);
       let editDiv = document.createElement('div');
       editDiv.className = 'editForm';
       addLabelAndInput(editDiv, 'buttonText', 'Text', buttonDefinition.text);
       addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title);
       addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format);
       addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
+      let actions = document.createElement('div');
+      actions.className = 'buttonrow';
+      let save = document.createElement('button');
+      save.innerText = 'save changes';
+      save.onclick = function() {window.alert('not implemented.');};
+      actions.appendChild(save);
+      let del = document.createElement('button');
+      del.innerText = 'delete';
+      del.onclick = function() {window.alert('not implemented.');};
+      actions.appendChild(del);
+      editDiv.appendChild(actions);
       node.appendChild(editDiv);
     }
   }
@@ -317,18 +360,19 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function addCopyButtons(node, preview = false) {
     const buttonStyles = '.inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0;' +
-      'border-radius:3px;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
+      'border-radius:0.22em;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
       'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
       'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
       'white-space:nowrap;background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;' +
-      'padding:0 5px;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;color:#0058a5;}' +
-      '.inno-btn svg{vertical-align:text-bottom;width:19px;height:auto;fill:currentColor;}' +
+      'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;color:#0058a5;}' +
+      '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
       '.inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;' +
       'color:#0058a5;}' +
       '.inno-btn:focus{background:rgba(0,88,165,0.15);box-shadow:none;transition-duration:0s,0.2s;outline:none;' +
       'color:#0058a5;}' +
+      '.editing{border:0.1em solid #F00;}' +
       '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
-      'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;margin:0 4px;}';
+      'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;margin:0 0.43em;}';
 
     const commitButtonId = preview ? 'commit-header-btn' : 'commit-header-btn-preview';
     if (!document.getElementById(commitButtonId)) {
@@ -385,11 +429,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       let style = document.createElement('style');
       style.innerText = `.${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
         `.${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;` +
-        'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;}' +
+        'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;text-align:center;}' +
         `.${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
         'border-radius:0.3em;background:#f2f6fa;}' +
         `.${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
-        `.${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:18px;max-height:18px;}` +
+        `.${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
         `.${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
         `.${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
         `.${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}`;
@@ -713,6 +757,36 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     return p.from.replace(/-/g, '');
   }
 
+
+  /**
+   * 
+   */
+  function saveAndCloseInnoExtensionConfigDialog() {
+    let hasChanges = false;
+    const currentDisabled = isTempoDisabled();
+    const settingDisabled = !document.getElementById('tempoIntegrationEnabled').checked;
+    if(currentDisabled !== settingDisabled) {
+      hasChanges = true;
+      setTempoDisabled(settingDisabled);
+    }
+
+    if(hasChanges) {
+      window.alert('you need to reload the current page for changes to take effect.');
+    }
+
+    closeInnoExtensionConfigDialog();
+  }
+
+  /**
+   * checks if click originated from target to avoid closing dialog on click in children and closes config dialog.
+   * @param {Event} e click event.
+   */
+  function closeInnoExtensionConfigCheckTarget(e) {
+    if(this === e.target) {
+      closeInnoExtensionConfigDialog();
+    }
+  }
+
   /**
    * Closes the configuration dialog.
    */
@@ -734,12 +808,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       const style = document.createElement('style');
       style.innerText = '.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;' +
         'background:#FFF;border-radius:15px;border:2px solid #36D;}' +
-        '.innotitle{font-size:1.6rem;padding-top:10px;margin-bottom:1rem;}' +
+        '.innotitle{font-size:1.6em;padding-top:10px;margin-bottom:1em;}' +
         'hr{border:1px solid #DDD;margin:10px 0;}' +
-        'h4{margin-top:0;margin-bottom:1rem;}' +
-        'input{background:white;color:black;border:1px solid black;border-radius:4px;padding:10px;width:350px;}' +
+        'h4{margin-top:0;margin-bottom:1em;}' +
+        'input:not([type=checkbox]):not([type=radio]){background:white;color:black;border:1px solid black;' +
+        'border-radius:4px;padding:10px;width:350px;}' +
+        'input:[type=checkbox]{width:40px;}' +
         '.help{margin:15px 0;}.buttonrow{margin:10px 0}' +
+        '.inno-hidden{display:none;}' +
+        `#${extConfigDialogTempoDetailsId}{padding-top:1em;}` +
         '.is-invalid{border:2px solid #f00;}' +
+        '.bigger{font-size:20pt;}' +
         'button{margin-right:10px;padding:10px;background:#EEF;cursor:pointer;}';
       background.appendChild(style);
       const dlg = document.createElement('div');
@@ -753,32 +832,62 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       const tokenTitle = document.createElement('h4');
       tokenTitle.innerText = 'Tempo integration';
       dlg.appendChild(tokenTitle);
+      const enabledInput = document.createElement('input');
+      enabledInput.type = 'checkbox';
+      enabledInput.id = 'tempoIntegrationEnabled';
+      enabledInput.value = '1';
+      const tempoDisabled = isTempoDisabled();
+      if(!tempoDisabled) {
+        enabledInput.setAttribute('checked','checked');
+      }
+      enabledInput.onchange = function(e) {
+        const isChecked = e.target.checked;
+        const grp = document.getElementById(extConfigDialogTempoDetailsId);
+        if(grp) {
+          if(isChecked) {
+            grp.className = '';
+          } else {
+            grp.className = 'inno-hidden';
+          }
+        }
+      };
+      dlg.appendChild(enabledInput);
+      const enabledLabel = document.createElement('label');
+      enabledLabel.innerText = 'Tempo integration enabled';
+      enabledLabel.setAttribute('for','tempoIntegrationEnabled');
+      dlg.appendChild(enabledLabel);
+      const tempoGroup = document.createElement('div');
+      tempoGroup.id = extConfigDialogTempoDetailsId;
+      if(tempoDisabled) {
+        tempoGroup.className = 'inno-hidden';
+      }
       const lbl = document.createElement('label');
       lbl.innerText = 'Tempo API Token:';
+      lbl.className = 'inno-margintop';
       lbl.setAttribute('for', 'tempoTokenInput');
-      dlg.appendChild(lbl);
+      tempoGroup.appendChild(lbl);
       const inp = document.createElement('input');
       inp.type = 'text';
       inp.id = 'tempoTokenInput';
       inp.value = GM_getValue('tempoToken', '');
       inp.placeholder = 'tempo token';
-      dlg.appendChild(inp);
+      tempoGroup.appendChild(inp);
       const a = document.createElement('a');
       a.href = tempoConfigLink;
       a.target = '_blank';
       a.innerText = 'open tempo configuration dialog in new tab';
-      dlg.appendChild(a);
+      tempoGroup.appendChild(a);
       const help = document.createElement('div');
       help.className = 'help';
       help.innerText = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
         'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff, \'Genehmigungsbereich: Genehmigungen anzeigen / ' +
         'Bereich für Zeiträume: Zeiträume anzeigen / Bereich der Zeitnachweise: Zeitnachweise anzeigen\' \n' +
         '➡ Bestätigen \n➡ Kopieren';
-      dlg.appendChild(help);
+      tempoGroup.appendChild(help);
       const btnRow = document.createElement('div');
       btnRow.className = 'buttonrow';
       const btn = document.createElement('button');
-      btn.innerText = 'check and save';
+      btn.innerText = 'check and save token';
       btn.onclick = async function () {
         try {
           let inp = document.getElementById('tempoTokenInput');
@@ -787,31 +896,42 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           }
           const success = await checkAndStoreTempoToken(inp.value);
           if (success) {
-            closeInnoExtensionConfigDialog();
+            saveAndCloseInnoExtensionConfigDialog();
           } else {
             inp.classList.add('is-invalid');
           }
         } catch (e) {
+          console.error(e);
           inp.classList.add('is-invalid');
         }
       };
       btnRow.appendChild(btn);
-      const close = document.createElement('button');
-      close.innerText = 'cancel';
-      close.onclick = closeInnoExtensionConfigDialog;
-      btnRow.appendChild(close);
-      dlg.appendChild(btnRow);
+      tempoGroup.appendChild(btnRow);
+      dlg.appendChild(tempoGroup);
       dlg.appendChild(document.createElement('hr'));
       const buttonTitle = document.createElement('h4');
       buttonTitle.innerText = 'Edit Buttons (preview)';
       dlg.appendChild(buttonTitle);
       let previewDiv = document.createElement('div');
+      previewDiv.className = 'bigger';
       dlg.appendChild(previewDiv);
       addCopyButtons(previewDiv, true);
       let editDlgDiv = document.createElement('div');
       editDlgDiv.id = extConfigDialogEditButtonId;
       dlg.appendChild(editDlgDiv);
-      background.click = closeInnoExtensionConfigDialog;
+      dlg.appendChild(document.createElement('hr'));
+      const closeRow = document.createElement('div');
+      closeRow.className = 'buttonrow';
+      const save = document.createElement('button');
+      save.innerText = 'save and close';
+      save.onclick = saveAndCloseInnoExtensionConfigDialog;
+      closeRow.appendChild(save);
+      const close = document.createElement('button');
+      close.innerText = 'cancel and close';
+      close.onclick = closeInnoExtensionConfigDialog;
+      closeRow.appendChild(close);
+      dlg.appendChild(closeRow);
+      background.onclick = closeInnoExtensionConfigCheckTarget;
       background.appendChild(dlg);
       document.body.append(background);
     }
@@ -832,7 +952,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         const parent = node.parentNode;
         let style = document.createElement('style');
         style.innerText = `.${configId}{display:flex;box-sizing:border-box;width:100%;min-height:40px;margin:0px;` +
-          'padding:8px 20px;-webkit-box-align:center;align-items:center;border:0px;font-size:14px;outline:0px;' +
+          'padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
           'text-decoration:none;user-select:none;background-color:transparent;color:#0058a5;cursor:pointer;}' +
           `.${configId}:hover{background-color:rgba(0,88,165,0.15);color:#0058a5;text-decoration:none;}` +
           `.${configId}:focus{background-color:transparent;color:#0058a5;text-decoration:none;}`;
