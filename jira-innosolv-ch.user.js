@@ -382,6 +382,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     node.appendChild(input);
   }
 
+  /**
+   * Checks the location.pathname for ignored patterns (disabledUrls). Returns true if it matches.
+   * 
+   * @returns {boolean} current location path should be ignored.
+   */
+  function isIgnoredPath() {
+    // disable extension for certain urls (confluence, tempo)
+    const path = window.location.pathname;
+    return disabledUrls.some(d => path.startsWith(d));
+  }
 
   /**
    * Adds configured copy buttons and styling to node.
@@ -390,6 +400,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} preview preparation for configuration dialog
    */
   function addCopyButtons(node, preview = false) {
+    if(isIgnoredPath()) {
+      return;
+    }
     const buttonStyles = '.inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0;' +
       'border-radius:0.22em;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
       'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
@@ -458,6 +471,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node container for label
    */
   function addTempoIntegration(node) {
+    if(isIgnoredPath()) {
+      return;
+    }
     const tempoId = 'inno-tempo';
     if (!document.getElementById(tempoId)) {
       let style = document.createElement('style');
@@ -998,6 +1014,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node container to add configuration button.
    */
   function addInnoExtensionConfigMenuItem(node) {
+    if(isIgnoredPath()) {
+      return;
+    }
     const headerText = node.innerText.toUpperCase();
     if (headerText == 'KONTO' || headerText == 'ACCOUNT') {
       const configId = 'inno-config-lnk';
@@ -1083,22 +1102,18 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     waitForKeyElements.controlObj = controlObj;
   }
 
-  // disable extension for certain urls (confluence, tempo)
-  const path = window.location.pathname;
-  if (!disabledUrls.some(d => path.startsWith(d))) {
-    // jira-extension relevant function calls
+  // jira-extension relevant function calls
 
-    // copy buttons
-    const actionSelector = 'div[data-test-id="issue.views.issue-base.foundation.status.actions-wrapper"]';
-    waitForKeyElements(actionSelector, addCopyButtons, false);
+  // copy buttons
+  const actionSelector = 'div[data-test-id="issue.views.issue-base.foundation.status.actions-wrapper"]';
+  waitForKeyElements(actionSelector, addCopyButtons, false);
 
-    // config menu for jira extension
-    const configMenuSelector = 'div[data-ds--menu--heading-item="true"]';
-    waitForKeyElements(configMenuSelector, addInnoExtensionConfigMenuItem, false);
-    // tempo integration
-    if (!isTempoDisabled()) {
-      const createButtonSelector = 'div[data-testid="create-button-wrapper"]';
-      waitForKeyElements(createButtonSelector, addTempoIntegration, false);
-    }
+  // config menu for jira extension
+  const configMenuSelector = 'div[data-ds--menu--heading-item="true"]';
+  waitForKeyElements(configMenuSelector, addInnoExtensionConfigMenuItem, false);
+  // tempo integration
+  if (!isTempoDisabled()) {
+    const createButtonSelector = 'div[data-testid="create-button-wrapper"]';
+    waitForKeyElements(createButtonSelector, addTempoIntegration, false);
   }
 })();
