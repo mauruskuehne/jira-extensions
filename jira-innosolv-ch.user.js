@@ -653,11 +653,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             const isCurrentWeek = new Date() < toDate;
             let span = document.createElement('span');
             span.innerHTML = `${toDate.getDate()}.${toDate.getMonth() + 1}.<br>${approvalStatus.statusKey}`;
-            const missing = Math.round((approvalStatus.required - approvalStatus.logged) / 60 / 60);
+            let missing = -(((approvalStatus.required - approvalStatus.logged) / 60 / 60).toFixed(2));
+            if(missing > 0) {
+              missing = 0;
+            }
             if (isCurrentWeek) {
               span.className = 'inno-blue';
             } else {
-              if (missing < 8) {
+              if (missing > 8) {
                 span.className = 'inno-orange';
               } else {
                 span.className = 'inno-red';
@@ -666,7 +669,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             let lastUpdate = new Date(approvalStatus.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
             span.title = (isCurrentWeek ? 'Current week\n' : '') +
-              `-${missing} hours\n` +
+              `${missing} hours\n` +
               `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
             node.appendChild(span);
           }
