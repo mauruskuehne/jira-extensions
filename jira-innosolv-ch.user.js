@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.3
+// @version     2.0.4
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -645,7 +645,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.appendChild(lnk);
       let periodsSeen = [];
       try {
-        displayPeriods.forEach(async (p) => {
+        for(const p of displayPeriods) {
           periodsSeen.push(getFromKey(p));
           const approvalStatus = await getApprovalStatus(p);
           if (approvalStatus.statusKey == 'OPEN') {
@@ -670,7 +670,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
             node.appendChild(span);
           }
-        });
+        }
       } catch (e) {
         console.error(e);
         return;
