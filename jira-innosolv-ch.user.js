@@ -66,6 +66,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const svgGitBranch = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 4C15.57 4 14 5.57 14 7.5c0 1.554 1.025 2.859 2.43 3.315-.146.932-.547 1.7-1.23 2.323-1.946 1.773-5.527 1.935-7.2 1.907V8.837c1.44-.434 2.5-1.757 2.5-3.337C10.5 3.57 8.93 2 7 2S3.5 3.57 3.5 5.5c0 1.58 1.06 2.903 2.5 3.337v6.326c-1.44.434-2.5 1.757-2.5 3.337C3.5 20.43 5.07 22 7 22s3.5-1.57 3.5-3.5c0-.551-.14-1.065-.367-1.529 2.06-.186 4.657-.757 6.409-2.35 1.097-.997 1.731-2.264 1.904-3.768C19.915 10.438 21 9.1 21 7.5 21 5.57 19.43 4 17.5 4zm-12 1.5C5.5 4.673 6.173 4 7 4s1.5.673 1.5 1.5S7.827 7 7 7s-1.5-.673-1.5-1.5zM7 20c-.827 0-1.5-.673-1.5-1.5a1.5 1.5 0 0 1 1.482-1.498l.13.01A1.495 1.495 0 0 1 7 20zM17.5 9c-.827 0-1.5-.673-1.5-1.5S16.673 6 17.5 6s1.5.673 1.5 1.5S18.327 9 17.5 9z"/></svg>';
   const svgData = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
   const svgTempo = '<svg width="18px" height="18px" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M9 2.02a6.98 6.98 0 1 1 0 13.96A6.98 6.98 0 0 1 9 2.02M9 18A9 9 0 1 0 9 0a9 9 0 0 0 0 18"/><path d="M11.2 6.07 8.32 8.73c-.1.09-.26.09-.36 0L6.8 7.63a.27.27 0 0 0-.36 0L5.07 8.89c-.1.1-.1.24 0 .33L8 11.93c.1.1.26.1.36 0l4.58-4.25c.1-.1.1-.24 0-.33l-1.38-1.28a.27.27 0 0 0-.36 0"/></g></svg>';
+  const svgRefresh = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 11H7.101l.001-.009a4.956 4.956 0 0 1 .752-1.787 5.054 5.054 0 0 1 2.2-1.811c.302-.128.617-.226.938-.291a5.078 5.078 0 0 1 2.018 0 4.978 4.978 0 0 1 2.525 1.361l1.416-1.412a7.036 7.036 0 0 0-2.224-1.501 6.921 6.921 0 0 0-1.315-.408 7.079 7.079 0 0 0-2.819 0 6.94 6.94 0 0 0-1.316.409 7.04 7.04 0 0 0-3.08 2.534 6.978 6.978 0 0 0-1.054 2.505c-.028.135-.043.273-.063.41H2l4 4 4-4zm4 2h2.899l-.001.008a4.976 4.976 0 0 1-2.103 3.138 4.943 4.943 0 0 1-1.787.752 5.073 5.073 0 0 1-2.017 0 4.956 4.956 0 0 1-1.787-.752 5.072 5.072 0 0 1-.74-.61L7.05 16.95a7.032 7.032 0 0 0 2.225 1.5c.424.18.867.317 1.315.408a7.07 7.07 0 0 0 2.818 0 7.031 7.031 0 0 0 4.395-2.945 6.974 6.974 0 0 0 1.053-2.503c.027-.135.043-.273.063-.41H22l-4-4-4 4z"/></svg>';
 
   const defaultButton = {
     text: 'Msg',
@@ -478,15 +479,18 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (!document.getElementById(tempoId)) {
       let style = document.createElement('style');
       style.innerText = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
-        `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;` +
+        `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
         'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;text-align:center;}' +
         `#${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
-        'border-radius:0.3em;background:#f2f6fa;}' +
+        'border-radius:0.3em;background:#f2f6fa;z-index:20;}' +
         `#${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
         `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
         `#${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
         `#${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
-        `#${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}`;
+        `#${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}` +
+        `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
+        'color:#0058a5;background:#f2f6fa;}' +
+        `#${tempoId} span.inno-refresh:hover{color:#0058a5;background:#d9e6f2;}`;
       node.appendChild(style);
 
       let span = document.createElement('span');
@@ -509,7 +513,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function updateTempo(node) {
     if (!isTempoDisabled()) {
       if (isTempoConfigured()) {
-        getTempoData(node);
+        getTempoData(node, false);
       } else {
         node.innerText = 'innoTempo: ➡ configure Jira Extension in profile menu. ';
         let disable = document.createElement('a');
@@ -563,7 +567,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     return new Promise(async (resolve, reject) => {
       try {
         const now = new Date();
-        const periods = await getTempoPeriods(now, token);
+        const periods = await getTempoPeriods(now, true, token);
         if (periods) {
           setTempoToken(token);
           resolve(true);
@@ -615,11 +619,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Gathers approval data (past 3 periods) from tempo API and displays it.
    * 
    * @param {Element} node container for display.
+   * @param {boolean} forceUpdate force update (ignore cache).
    */
-  async function getTempoData(node) {
+  async function getTempoData(node, forceUpdate) {
     try {
       const now = new Date();
-      const periods = await getTempoPeriods(now);
+      const periods = await getTempoPeriods(now, forceUpdate);
       // clear node
       while (node.firstChild) {
         node.removeChild(node.lastChild);
@@ -647,7 +652,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       try {
         for(const p of displayPeriods) {
           periodsSeen.push(getFromKey(p));
-          const approvalStatus = await getApprovalStatus(p);
+          const approvalStatus = await getApprovalStatus(p, forceUpdate);
           if (approvalStatus.statusKey == 'OPEN') {
             const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
             const isCurrentWeek = new Date() < toDate;
@@ -674,6 +679,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             node.appendChild(span);
           }
         }
+        const refresh = document.createElement('span');
+        refresh.innerHTML = svgRefresh;
+        refresh.className = 'inno-refresh';
+        refresh.title = 'force update';
+        refresh.onclick = () => { getTempoData(node, true); };
+        node.appendChild(refresh);
       } catch (e) {
         console.error(e);
         return;
@@ -688,14 +699,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Gets available "periods" from tempo api.
    * 
    * @param {Date} now current Date (for easeier access).
+   * @param {boolean} forceUpdate forces update (ignore cache).
    * @param {string} withToken forces http request with this token, ignores cache.
    * @returns {Promise} tempo periods within the past month.
    */
-  function getTempoPeriods(now, withToken) {
+  function getTempoPeriods(now, forceUpdate, withToken) {
     return new Promise((resolve, reject) => {
       let cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
       let cachedDate = new Date(cachedPeriods.cache);
-      if (cachedDate > now && !withToken) {
+      if (cachedDate > now && !withToken && !forceUpdate) {
         resolve(cachedPeriods.periods);
         return;
       } else {
@@ -732,16 +744,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Gets approval status of one period.
    * 
    * @param {period} period current period.
+   * @param {boolean} forceUpdate force update (ignore cache).
    * @returns {Promise} approval status of period.
    */
-  function getApprovalStatus(period) {
+  function getApprovalStatus(period, forceUpdate) {
     return new Promise((resolve, reject) => {
       let approvals = getApprovalStatusAll();
       const fromKey = getFromKey(period);
       if (approvals[fromKey]) {
         let approval = approvals[fromKey];
         let cachedDate = new Date(approval.cache);
-        if (cachedDate > new Date()) {
+        if (cachedDate > new Date() && !forceUpdate) {
           resolve(approval);
           return;
         }
