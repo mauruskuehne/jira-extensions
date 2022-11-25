@@ -51,6 +51,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const extConfigDialogId = 'jiraExtConfigDialog';
   const extConfigDialogEditButtonId = 'jiraExtConfigDialogEditButtonDialog';
   const extConfigDialogTempoDetailsId = 'jiraExtConfigDialogTempoDetails';
+  // tempo integration id
+  const tempoId = 'inno-tempo';
+  // configuration menu item id
+  const configMenuItemId = 'inno-config-lnk';
   // disable extension for these urls
   const disabledUrls = ['/wiki/', '/plugins/'];
 
@@ -61,7 +65,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   https://github.com/atisawd/boxicons/tree/master/svg/regular
   */
   const svgMessageAltEdit = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.586 18 12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h3.586zM5 4h14v12h-4.414L12 18.586 9.414 16H5V4z"/><path d="m12.479 7.219-4.977 4.969v1.799h1.8l4.975-4.969zm2.219-2.22 1.8 1.8-1.37 1.37-1.8-1.799z"/></svg>';
-  const svgTargetLock = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3"/><path d="M13 4.069V2h-2v2.069A8.008 8.008 0 0 0 4.069 11H2v2h2.069A8.007 8.007 0 0 0 11 19.931V22h2v-2.069A8.007 8.007 0 0 0 19.931 13H22v-2h-2.069A8.008 8.008 0 0 0 13 4.069zM12 18c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"/></svg>';
   const svgHash = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.018 3.815 15.232 8h-4.966l.716-3.815-1.964-.37L8.232 8H4v2h3.857l-.751 4H3v2h3.731l-.714 3.805 1.965.369L8.766 16h4.966l-.714 3.805 1.965.369.783-4.174H20v-2h-3.859l.751-4H21V8h-3.733l.716-3.815-1.965-.37zM14.106 14H9.141l.751-4h4.966l-.752 4z"/></svg>';
   const svgGitBranch = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 4C15.57 4 14 5.57 14 7.5c0 1.554 1.025 2.859 2.43 3.315-.146.932-.547 1.7-1.23 2.323-1.946 1.773-5.527 1.935-7.2 1.907V8.837c1.44-.434 2.5-1.757 2.5-3.337C10.5 3.57 8.93 2 7 2S3.5 3.57 3.5 5.5c0 1.58 1.06 2.903 2.5 3.337v6.326c-1.44.434-2.5 1.757-2.5 3.337C3.5 20.43 5.07 22 7 22s3.5-1.57 3.5-3.5c0-.551-.14-1.065-.367-1.529 2.06-.186 4.657-.757 6.409-2.35 1.097-.997 1.731-2.264 1.904-3.768C19.915 10.438 21 9.1 21 7.5 21 5.57 19.43 4 17.5 4zm-12 1.5C5.5 4.673 6.173 4 7 4s1.5.673 1.5 1.5S7.827 7 7 7s-1.5-.673-1.5-1.5zM7 20c-.827 0-1.5-.673-1.5-1.5a1.5 1.5 0 0 1 1.482-1.498l.13.01A1.495 1.495 0 0 1 7 20zM17.5 9c-.827 0-1.5-.673-1.5-1.5S16.673 6 17.5 6s1.5.673 1.5 1.5S18.327 9 17.5 9z"/></svg>';
   const svgData = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
@@ -86,6 +89,58 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     },
   ];
 
+  /* style definitions */
+  const copyButtonStyles = '.inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0;' +
+    'border-radius:0.22em;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
+    'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
+    'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
+    'white-space:nowrap;background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;' +
+    'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;' +
+    'color:#0058a5;}' +
+    '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
+    '.inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;' +
+    'color:#0058a5;}' +
+    '.inno-btn:focus{background:rgba(0,88,165,0.15);box-shadow:none;transition-duration:0s,0.2s;outline:none;' +
+    'color:#0058a5;}' +
+    '.editing{border:0.1em solid #F00;}' +
+    '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
+    'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
+    'margin:0 0.43em;}';
+  const tempoStyles = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
+    `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
+    'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;text-align:center;}' +
+    `#${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
+    'border-radius:0.3em;background:#f2f6fa;z-index:20;}' +
+    `#${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
+    `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
+    `#${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
+    `#${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
+    `#${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}` +
+    `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
+    'color:#0058a5;background:transparent;font-size:0.8em;}' +
+    `#${tempoId} span.inno-refresh:hover{color:#0058a5;background:#d9e6f2;}`;
+  const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
+    'background:rgba(0,0,0,0.4);opacity:1;font-size:12pt;';
+  const configDialogStyles = '.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;' +
+    'background:#FFF;border-radius:15px;border:2px solid #36D;}' +
+    '.innotitle{font-size:1.6em;padding-top:10px;margin-bottom:1em;}' +
+    'hr{border:1px solid #DDD;margin:10px 0;}' +
+    'h4{margin-top:0;margin-bottom:1em;}' +
+    'input:not([type=checkbox]):not([type=radio]){background:white;color:black;border:1px solid black;' +
+    'border-radius:4px;padding:10px;width:350px;}' +
+    'input:[type=checkbox]{width:40px;}' +
+    '.help{margin:15px 0;}.buttonrow{margin:10px 0}' +
+    '.inno-hidden{display:none;}' +
+    `#${extConfigDialogTempoDetailsId}{padding-top:1em;}` +
+    '.is-invalid{border:2px solid #f00;}' +
+    '.bigger{font-size:20pt;}' +
+    'button{margin-right:10px;padding:10px;background:#EEF;cursor:pointer;}';
+  const configMenuItemStyles = `.${configMenuItemId}{display:flex;box-sizing:border-box;width:100%;min-height:40px;` +
+    'margin:0px;padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
+    'text-decoration:none;user-select:none;background-color:transparent;color:#0058a5;cursor:pointer;}' +
+    `.${configMenuItemId}:hover{background-color:rgba(0,88,165,0.15);color:#0058a5;text-decoration:none;}` +
+    `.${configMenuItemId}:focus{background-color:transparent;color:#0058a5;text-decoration:none;}`;
+  
   // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
   // The main button (git commit message) cannot be changed or removed.
   //
@@ -334,27 +389,27 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.removeAttribute('data-editing-id');
     }
     if(message) {
-      let errDiv = document.createElement('div');
+      const errDiv = document.createElement('div');
       errDiv.className = 'is-error';
-      let errMsg = document.createElement('p');
+      const errMsg = document.createElement('p');
       errMsg.innerText = message;
       errDiv.appendChild(errMsg);
       node.appendChild(errDiv);
     } else {
       node.setAttribute('data-editing-id', id);
-      let editDiv = document.createElement('div');
+      const editDiv = document.createElement('div');
       editDiv.className = 'editForm';
       addLabelAndInput(editDiv, 'buttonText', 'Text', buttonDefinition.text);
-      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title);
-      addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format);
+      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title, true);
+      addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format, true);
       addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
-      let actions = document.createElement('div');
+      const actions = document.createElement('div');
       actions.className = 'buttonrow';
-      let save = document.createElement('button');
+      const save = document.createElement('button');
       save.innerText = 'save changes';
       save.onclick = function() {window.alert('not implemented.');};
       actions.appendChild(save);
-      let del = document.createElement('button');
+      const del = document.createElement('button');
       del.innerText = 'delete';
       del.onclick = function() {window.alert('not implemented.');};
       actions.appendChild(del);
@@ -370,17 +425,31 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string} id node id for input element.
    * @param {string} title of the label.
    * @param {string} value of the input element.
+   * @param {boolean} specialChars handle special chars like \t \r \n
    */
-  function addLabelAndInput(node, id, title, value) {
-    let label = document.createElement('label');
+  function addLabelAndInput(node, id, title, value, specialChars = false) {
+    const label = document.createElement('label');
     label.setAttribute('for', id);
     label.innerText = title + ':';
     node.appendChild(label);
-    let input = document.createElement('input');
+    const input = document.createElement('input');
     input.type = 'text';
     input.id = id;
-    input.value = value;
+    input.value = specialChars ? transformSpecialChars(value) : value;
     node.appendChild(input);
+  }
+
+  /**
+   * transforms special characters like \t \r or \n back to readable/editable characters.
+   * 
+   * @param {string} value string containing original value including tab and line-feed characters.
+   * @returns {string} formatted value with readable tab and line-feed characters.
+   */
+  function transformSpecialChars(value) {
+    let ret = value.split('\t').join('\\t');
+    ret = ret.split('\r').join('\\r');
+    ret = ret.split('\n').join('\\n');
+    return ret;
   }
 
   /**
@@ -404,36 +473,20 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if(isIgnoredPath()) {
       return;
     }
-    const buttonStyles = '.inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0;' +
-      'border-radius:0.22em;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
-      'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
-      'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
-      'white-space:nowrap;background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;' +
-      'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;' +
-      'color:#0058a5;}' +
-      '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
-      '.inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;' +
-      'color:#0058a5;}' +
-      '.inno-btn:focus{background:rgba(0,88,165,0.15);box-shadow:none;transition-duration:0s,0.2s;outline:none;' +
-      'color:#0058a5;}' +
-      '.editing{border:0.1em solid #F00;}' +
-      '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
-      'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
-      'margin:0 0.43em;}';
 
     const commitButtonId = preview ? 'commit-header-btn' : 'commit-header-btn-preview';
     if (!document.getElementById(commitButtonId)) {
-      let style = document.createElement('style');
-      style.innerText = buttonStyles;
+      const style = document.createElement('style');
+      style.innerText = copyButtonStyles;
       node.appendChild(style);
 
-      let createBtn = function (id, buttondef) {
-        let btn = document.createElement('button');
+      const createBtn = function (id, buttondef) {
+        const btn = document.createElement('button');
         btn.id = id;
         btn.className = 'inno-btn';
         btn.title = buttondef.title;
         btn.setAttribute('data-format', buttondef.format);
-        let lbl = document.createElement('span');
+        const lbl = document.createElement('span');
         if (buttondef.icon) {
           lbl.innerHTML = buttondef.icon;
         } else {
@@ -450,7 +503,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         return btn;
       };
 
-      let container = document.createElement('div');
+      const container = document.createElement('div');
       container.className = 'inno-btn-container';
       // create main button
       container.appendChild(
@@ -458,7 +511,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       );
 
       // create additional buttons
-      let extraButtons = GM_getValue('extraButtons', defaultExtraButtons);
+      const extraButtons = GM_getValue('extraButtons', defaultExtraButtons);
       extraButtons.forEach(function (btn, i) {
         container.appendChild(createBtn(commitButtonId + '-' + i, btn));
       });
@@ -475,25 +528,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if(isIgnoredPath()) {
       return;
     }
-    const tempoId = 'inno-tempo';
+    
     if (!document.getElementById(tempoId)) {
-      let style = document.createElement('style');
-      style.innerText = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
-        `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
-        'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;text-align:center;}' +
-        `#${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
-        'border-radius:0.3em;background:#f2f6fa;z-index:20;}' +
-        `#${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
-        `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
-        `#${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
-        `#${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
-        `#${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}` +
-        `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
-        'color:#0058a5;background:#f2f6fa;}' +
-        `#${tempoId} span.inno-refresh:hover{color:#0058a5;background:#d9e6f2;}`;
+      const style = document.createElement('style');
+      style.innerText = tempoStyles;
       node.appendChild(style);
 
-      let span = document.createElement('span');
+      const span = document.createElement('span');
       span.id = tempoId;
       span.title = 'innoTempo: initializing…';
       span.innerText = 'innoTempo…';
@@ -516,7 +557,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         getTempoData(node, false);
       } else {
         node.innerText = 'innoTempo: ➡ configure Jira Extension in profile menu. ';
-        let disable = document.createElement('a');
+        const disable = document.createElement('a');
         disable.href = '#';
         disable.onclick = () => {
           setTempoDisabled(true);
@@ -632,7 +673,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.title = '';
 
       if (!periods) {
-        let err = document.createElement('span');
+        const err = document.createElement('span');
         err.innerHTML = 'Error retrieving periods from tempo api.<br>Check your browser logs!';
         node.appendChild(err);
         return;
@@ -643,12 +684,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       }
       const displayPeriods = periods.slice(-3);
       // Tempo app link
-      let lnk = document.createElement('a');
+      const lnk = document.createElement('a');
       lnk.href = tempoLink;
       lnk.title = 'Open Tempo app';
       lnk.innerHTML = svgTempo;
       node.appendChild(lnk);
-      let periodsSeen = [];
+      const periodsSeen = [];
       try {
         for(const p of displayPeriods) {
           periodsSeen.push(getFromKey(p));
@@ -656,7 +697,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           if (approvalStatus.statusKey == 'OPEN') {
             const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
             const isCurrentWeek = new Date() < toDate;
-            let span = document.createElement('span');
+            const span = document.createElement('span');
             span.innerHTML = `${toDate.getDate()}.${toDate.getMonth() + 1}.<br>${approvalStatus.statusKey}`;
             let missing = -(((approvalStatus.required - approvalStatus.logged) / 60 / 60).toFixed(2));
             if(missing > 0) {
@@ -671,7 +712,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                 span.className = 'inno-red';
               }
             }
-            let lastUpdate = new Date(approvalStatus.cache);
+            const lastUpdate = new Date(approvalStatus.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
             span.title = (isCurrentWeek ? 'Current week\n' : '') +
               `${missing} hours\n` +
@@ -705,13 +746,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function getTempoPeriods(now, forceUpdate, withToken) {
     return new Promise((resolve, reject) => {
-      let cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
-      let cachedDate = new Date(cachedPeriods.cache);
+      const cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
+      const cachedDate = new Date(cachedPeriods.cache);
       if (cachedDate > now && !withToken && !forceUpdate) {
         resolve(cachedPeriods.periods);
         return;
       } else {
-        let oneMonthAgo = new Date();
+        const oneMonthAgo = new Date();
         oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
         const pastParam = getYMD(oneMonthAgo);
         const nowParam = getYMD(now);
@@ -725,7 +766,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           responseType: 'json',
           onload: (resp) => {
             if (resp.status == 200) {
-              let cacheExp = new Date();
+              const cacheExp = new Date();
               cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
               GM_setValue('tempoPeriods', { cache: getYMD(cacheExp), periods: resp.response.periods });
               resolve(resp.response.periods);
@@ -749,11 +790,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function getApprovalStatus(period, forceUpdate) {
     return new Promise((resolve, reject) => {
-      let approvals = getApprovalStatusAll();
+      const approvals = getApprovalStatusAll();
       const fromKey = getFromKey(period);
       if (approvals[fromKey]) {
-        let approval = approvals[fromKey];
-        let cachedDate = new Date(approval.cache);
+        const approval = approvals[fromKey];
+        const cachedDate = new Date(approval.cache);
         if (cachedDate > new Date() && !forceUpdate) {
           resolve(approval);
           return;
@@ -770,7 +811,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         responseType: 'json',
         onload: (resp) => {
           if (resp.status == 200) {
-            let cacheExp = new Date();
+            const cacheExp = new Date();
             cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
             const ret = {
               cache: cacheExp.toISOString(),
@@ -806,7 +847,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {any} approval data.
    */
   function saveApprovalStatus(key, approval) {
-    let approvals = getApprovalStatusAll();
+    const approvals = getApprovalStatusAll();
     approvals[key] = approval;
     GM_setValue('tempoApprovals', approvals);
   }
@@ -817,7 +858,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Array<string>} periodsSeen periods that have been iterated through.
    */
   function cleanupApprovalStatus(periodsSeen) {
-    let approvals = getApprovalStatusAll();
+    const approvals = getApprovalStatusAll();
     let changed = false;
     Object.keys(approvals).forEach((key) => {
       if (!periodsSeen.includes(key)) {
@@ -885,24 +926,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function showInnoExtensionConfigDialog(e) {
     if (!document.getElementById(extConfigDialogId)) {
       const background = document.createElement('div');
-      background.setAttribute('style', 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
-        'background:rgba(0,0,0,0.4);opacity:1;font-size:12pt;');
+      background.setAttribute('style', configDialogBackgroundStyles);
       background.id = extConfigDialogId;
       const style = document.createElement('style');
-      style.innerText = '.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;' +
-        'background:#FFF;border-radius:15px;border:2px solid #36D;}' +
-        '.innotitle{font-size:1.6em;padding-top:10px;margin-bottom:1em;}' +
-        'hr{border:1px solid #DDD;margin:10px 0;}' +
-        'h4{margin-top:0;margin-bottom:1em;}' +
-        'input:not([type=checkbox]):not([type=radio]){background:white;color:black;border:1px solid black;' +
-        'border-radius:4px;padding:10px;width:350px;}' +
-        'input:[type=checkbox]{width:40px;}' +
-        '.help{margin:15px 0;}.buttonrow{margin:10px 0}' +
-        '.inno-hidden{display:none;}' +
-        `#${extConfigDialogTempoDetailsId}{padding-top:1em;}` +
-        '.is-invalid{border:2px solid #f00;}' +
-        '.bigger{font-size:20pt;}' +
-        'button{margin-right:10px;padding:10px;background:#EEF;cursor:pointer;}';
+      style.innerText = configDialogStyles;
       background.appendChild(style);
       const dlg = document.createElement('div');
       dlg.className = 'inno-dlg';
@@ -973,7 +1000,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       btn.innerText = 'check and save token';
       btn.onclick = async function () {
         try {
-          let inp = document.getElementById('tempoTokenInput');
+          const inp = document.getElementById('tempoTokenInput');
           if(inp.classList.contains('is-invalid')) {
             inp.classList.remove('is-invalid');
           }
@@ -995,11 +1022,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       const buttonTitle = document.createElement('h4');
       buttonTitle.innerText = 'Edit Buttons (preview)';
       dlg.appendChild(buttonTitle);
-      let previewDiv = document.createElement('div');
+      const previewDiv = document.createElement('div');
       previewDiv.className = 'bigger';
       dlg.appendChild(previewDiv);
       addCopyButtons(previewDiv, true);
-      let editDlgDiv = document.createElement('div');
+      const editDlgDiv = document.createElement('div');
       editDlgDiv.id = extConfigDialogEditButtonId;
       dlg.appendChild(editDlgDiv);
       dlg.appendChild(document.createElement('hr'));
@@ -1035,19 +1062,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
     const headerText = node.innerText.toUpperCase();
     if (headerText == 'KONTO' || headerText == 'ACCOUNT') {
-      const configId = 'inno-config-lnk';
-      if (!document.getElementById(configId)) {
+      if (!document.getElementById(configMenuItemId)) {
         const parent = node.parentNode;
-        let style = document.createElement('style');
-        style.innerText = `.${configId}{display:flex;box-sizing:border-box;width:100%;min-height:40px;margin:0px;` +
-          'padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
-          'text-decoration:none;user-select:none;background-color:transparent;color:#0058a5;cursor:pointer;}' +
-          `.${configId}:hover{background-color:rgba(0,88,165,0.15);color:#0058a5;text-decoration:none;}` +
-          `.${configId}:focus{background-color:transparent;color:#0058a5;text-decoration:none;}`;
+        const style = document.createElement('style');
+        style.innerText = configMenuItemStyles;
         parent.appendChild(style);
-        let lnk = document.createElement('a');
-        lnk.id = configId;
-        lnk.className = configId;
+        const lnk = document.createElement('a');
+        lnk.id = configMenuItemId;
+        lnk.className = configMenuItemId;
         lnk.href = '#';
         lnk.innerText = '⚙ Jira Extension';
         lnk.onclick = showInnoExtensionConfigDialog;
