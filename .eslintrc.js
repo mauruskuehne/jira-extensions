@@ -30,7 +30,7 @@ module.exports = {
       'always'
     ],
     'no-unused-vars': [
-      'warn',
+      'error',
       {
         'vars': 'all',
         'args': 'after-used'

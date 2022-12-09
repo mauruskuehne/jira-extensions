@@ -70,6 +70,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const svgData = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
   const svgTempo = '<svg width="18px" height="18px" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M9 2.02a6.98 6.98 0 1 1 0 13.96A6.98 6.98 0 0 1 9 2.02M9 18A9 9 0 1 0 9 0a9 9 0 0 0 0 18"/><path d="M11.2 6.07 8.32 8.73c-.1.09-.26.09-.36 0L6.8 7.63a.27.27 0 0 0-.36 0L5.07 8.89c-.1.1-.1.24 0 .33L8 11.93c.1.1.26.1.36 0l4.58-4.25c.1-.1.1-.24 0-.33l-1.38-1.28a.27.27 0 0 0-.36 0"/></g></svg>';
   const svgRefresh = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 11H7.101l.001-.009a4.956 4.956 0 0 1 .752-1.787 5.054 5.054 0 0 1 2.2-1.811c.302-.128.617-.226.938-.291a5.078 5.078 0 0 1 2.018 0 4.978 4.978 0 0 1 2.525 1.361l1.416-1.412a7.036 7.036 0 0 0-2.224-1.501 6.921 6.921 0 0 0-1.315-.408 7.079 7.079 0 0 0-2.819 0 6.94 6.94 0 0 0-1.316.409 7.04 7.04 0 0 0-3.08 2.534 6.978 6.978 0 0 0-1.054 2.505c-.028.135-.043.273-.063.41H2l4 4 4-4zm4 2h2.899l-.001.008a4.976 4.976 0 0 1-2.103 3.138 4.943 4.943 0 0 1-1.787.752 5.073 5.073 0 0 1-2.017 0 4.956 4.956 0 0 1-1.787-.752 5.072 5.072 0 0 1-.74-.61L7.05 16.95a7.032 7.032 0 0 0 2.225 1.5c.424.18.867.317 1.315.408a7.07 7.07 0 0 0 2.818 0 7.031 7.031 0 0 0 4.395-2.945 6.974 6.974 0 0 0 1.053-2.503c.027-.135.043-.273.063-.41H22l-4-4-4 4z"/></svg>';
+  const svgInfoCircle = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M11 11h2v6h-2zm0-4h2v2h-2z"/></svg>';
 
   const defaultButton = {
     text: 'Msg',
@@ -96,7 +97,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
     'white-space:nowrap;background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;' +
     'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;' +
-    'color:#0058a5;}' +
+    'color:#0058a5;border:0.1em solid transparent;}' +
     '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
     '.inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;' +
     'color:#0058a5;}' +
@@ -140,7 +141,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'text-decoration:none;user-select:none;background-color:transparent;color:#0058a5;cursor:pointer;}' +
     `.${configMenuItemId}:hover{background-color:rgba(0,88,165,0.15);color:#0058a5;text-decoration:none;}` +
     `.${configMenuItemId}:focus{background-color:transparent;color:#0058a5;text-decoration:none;}`;
-  
+
   // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
   // The main button (git commit message) cannot be changed or removed.
   //
@@ -321,8 +322,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function setClassAndRemoveFromSiblings(node, className) {
     const matchingSiblings = node.parentNode.getElementsByClassName(className);
-    if(matchingSiblings.length > 0) {
-      for(let i = 0;i<matchingSiblings.length;i++) {
+    if (matchingSiblings.length > 0) {
+      for (let i = 0; i < matchingSiblings.length; i++) {
         matchingSiblings[i].classList.remove(className);
       }
     }
@@ -340,19 +341,19 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (targ.nodeType == 3) targ = targ.parentNode; // defeat Safari bug
     const targBtn = searchParentOfType(targ, 'BUTTON');
     const editDialog = document.getElementById(extConfigDialogEditButtonId);
-    if(!editDialog) {
+    if (!editDialog) {
       console.error('jira-innosolv-extensions: edit dialog is not open, ignoring PREVIEW click.');
     }
     // clear 'editing' class from all buttons, add class to currently clicked button
-    if(targBtn.hasAttribute('data-buttondef')) {
+    if (targBtn.hasAttribute('data-buttondef')) {
       setClassAndRemoveFromSiblings(targBtn, 'editing');
     }
-    if(targBtn.hasAttribute('data-editable') &&
+    if (targBtn.hasAttribute('data-editable') &&
       targBtn.getAttribute('data-editable') === 'true' &&
       targBtn.hasAttribute('data-buttondef')
     ) {
       const buttonDef = JSON.parse(targBtn.getAttribute('data-buttondef'));
-      
+
       makeButtonEditForm(editDialog, buttonDef, undefined, targBtn.id);
     } else {
       makeButtonEditForm(
@@ -382,13 +383,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function makeButtonEditForm(node, buttonDefinition, message, id) {
     // clean edit dialog children
-    while(node.firstChild) {
+    while (node.firstChild) {
       node.removeChild(node.lastChild);
     }
-    if(node.hasAttribute('data-editing-id')) {
+    if (node.hasAttribute('data-editing-id')) {
       node.removeAttribute('data-editing-id');
     }
-    if(message) {
+    if (message) {
       const errDiv = document.createElement('div');
       errDiv.className = 'is-error';
       const errMsg = document.createElement('p');
@@ -407,11 +408,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       actions.className = 'buttonrow';
       const save = document.createElement('button');
       save.innerText = 'save changes';
-      save.onclick = function() {window.alert('not implemented.');};
+      save.onclick = function () { window.alert('not implemented.'); };
       actions.appendChild(save);
       const del = document.createElement('button');
       del.innerText = 'delete';
-      del.onclick = function() {window.alert('not implemented.');};
+      del.onclick = function () { window.alert('not implemented.'); };
       actions.appendChild(del);
       editDiv.appendChild(actions);
       node.appendChild(editDiv);
@@ -470,7 +471,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} preview preparation for configuration dialog
    */
   function addCopyButtons(node, preview = false) {
-    if(isIgnoredPath()) {
+    if (isIgnoredPath()) {
       return;
     }
 
@@ -525,10 +526,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node container for label
    */
   function addTempoIntegration(node) {
-    if(isIgnoredPath()) {
+    if (isIgnoredPath()) {
       return;
     }
-    
+
     if (!document.getElementById(tempoId)) {
       const style = document.createElement('style');
       style.innerText = tempoStyles;
@@ -691,7 +692,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.appendChild(lnk);
       const periodsSeen = [];
       try {
-        for(const p of displayPeriods) {
+        for (const p of displayPeriods) {
           periodsSeen.push(getFromKey(p));
           const approvalStatus = await getApprovalStatus(p, forceUpdate);
           if (approvalStatus.statusKey == 'OPEN') {
@@ -700,7 +701,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             const span = document.createElement('span');
             span.innerHTML = `${toDate.getDate()}.${toDate.getMonth() + 1}.<br>${approvalStatus.statusKey}`;
             let missing = -(((approvalStatus.required - approvalStatus.logged) / 60 / 60).toFixed(2));
-            if(missing > 0) {
+            if (missing > 0) {
               missing = 0;
             }
             if (isCurrentWeek) {
@@ -888,12 +889,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     let hasChanges = false;
     const currentDisabled = isTempoDisabled();
     const settingDisabled = !document.getElementById('tempoIntegrationEnabled').checked;
-    if(currentDisabled !== settingDisabled) {
+    if (currentDisabled !== settingDisabled) {
       hasChanges = true;
       setTempoDisabled(settingDisabled);
     }
 
-    if(hasChanges) {
+    if (hasChanges) {
       window.alert('you need to reload the current page for changes to take effect.');
     }
     closeInnoExtensionConfigDialog();
@@ -905,7 +906,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Event} e click event.
    */
   function closeInnoExtensionConfigCheckTarget(e) {
-    if(this === e.target) {
+    if (this === e.target) {
       closeInnoExtensionConfigDialog();
     }
   }
@@ -915,6 +916,26 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function closeInnoExtensionConfigDialog() {
     document.getElementById(extConfigDialogId).remove();
+  }
+
+  /**
+   * Toggles class name on node.
+   * 
+   * @param {Element} node to toggle class
+   * @param {string} className to add or remove
+   * @param {boolean|undefined} addCond condition to add/remove class
+   */
+  function toggleClass(node, className, addCond) {
+    if (node) {
+      if (addCond === undefined) {
+        addCond = !node.classList.contains(className);
+      }
+      if (addCond && !node.classList.contains(className)) {
+        node.classList.add(className);
+      } else if (!addCond && node.classList.contains(className)) {
+        node.classList.remove(className);
+      }
+    }
   }
 
   /**
@@ -947,28 +968,22 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       enabledInput.id = 'tempoIntegrationEnabled';
       enabledInput.value = '1';
       const tempoDisabled = isTempoDisabled();
-      if(!tempoDisabled) {
-        enabledInput.setAttribute('checked','checked');
+      if (!tempoDisabled) {
+        enabledInput.setAttribute('checked', 'checked');
       }
-      enabledInput.onchange = function(e) {
+      enabledInput.onchange = function (e) {
         const isChecked = e.target.checked;
         const grp = document.getElementById(extConfigDialogTempoDetailsId);
-        if(grp) {
-          if(isChecked) {
-            grp.className = '';
-          } else {
-            grp.className = 'inno-hidden';
-          }
-        }
+        toggleClass(grp, 'inno-hidden', !isChecked);
       };
       dlg.appendChild(enabledInput);
       const enabledLabel = document.createElement('label');
       enabledLabel.innerText = 'Tempo integration enabled';
-      enabledLabel.setAttribute('for','tempoIntegrationEnabled');
+      enabledLabel.setAttribute('for', 'tempoIntegrationEnabled');
       dlg.appendChild(enabledLabel);
       const tempoGroup = document.createElement('div');
       tempoGroup.id = extConfigDialogTempoDetailsId;
-      if(tempoDisabled) {
+      if (tempoDisabled) {
         tempoGroup.className = 'inno-hidden';
       }
       const lbl = document.createElement('label');
@@ -987,8 +1002,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       a.target = '_blank';
       a.innerText = 'open tempo configuration dialog in new tab';
       tempoGroup.appendChild(a);
+      const helpId = 'inno-tempo-config-help';
+      const helpToggle = document.createElement('div');
+      helpToggle.onclick = () => {
+        const helpNode = document.getElementById(helpId);
+        toggleClass(helpNode, 'inno-hidden');
+      };
+      helpToggle.innerHTML = svgInfoCircle;
+      tempoGroup.appendChild(helpToggle);
       const help = document.createElement('div');
-      help.className = 'help';
+      help.id = helpId;
+      help.className = 'help inno-hidden';
       help.innerText = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
         'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff, \'Genehmigungsbereich: Genehmigungen anzeigen / ' +
         'Bereich für Zeiträume: Zeiträume anzeigen / Bereich der Zeitnachweise: Zeitnachweise anzeigen\' \n' +
@@ -1001,7 +1025,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       btn.onclick = async function () {
         try {
           const inp = document.getElementById('tempoTokenInput');
-          if(inp.classList.contains('is-invalid')) {
+          if (inp.classList.contains('is-invalid')) {
             inp.classList.remove('is-invalid');
           }
           const success = await checkAndStoreTempoToken(inp.value);
@@ -1057,7 +1081,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node container to add configuration button.
    */
   function addInnoExtensionConfigMenuItem(node) {
-    if(isIgnoredPath()) {
+    if (isIgnoredPath()) {
       return;
     }
     const headerText = node.innerText.toUpperCase();
