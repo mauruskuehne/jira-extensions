@@ -95,52 +95,63 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'border-radius:0.22em;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
     'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
     'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
-    'white-space:nowrap;background:rgba(0,88,165,0.05);cursor:pointer;height:2.28571em;line-height:2.28571em;' +
+    'white-space:nowrap;background:var(--ds-background-neutral);cursor:pointer;height:2.286em;line-height:2.286em;' +
     'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;' +
-    'color:#0058a5;border:0.1em solid transparent;}' +
+    'color:var(--ds-icon-accent-blue);border:0.1em solid transparent;}' +
     '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
-    '.inno-btn:hover{background:rgba(0,88,165,0.15);text-decoration:inherit;transition-duration:0s, 0.15s;' +
-    'color:#0058a5;}' +
-    '.inno-btn:focus{background:rgba(0,88,165,0.15);box-shadow:none;transition-duration:0s,0.2s;outline:none;' +
-    'color:#0058a5;}' +
-    '.editing{border:0.1em solid #F00;}' +
+    '.inno-btn:hover{background:var(--ds-background-neutral-hovered);text-decoration:inherit;' +
+    'transition-duration:0s, 0.15s;color:var(--ds-icon-accent-blue);}' +
+    '.inno-btn:focus{background:var(--ds-background-neutral);box-shadow:none;transition-duration:0s,0.2s;' +
+    'outline:none;color:var(--ds-icon-accent-blue);}' +
+    '.editing{border:0.1em solid var(--ds-border-danger);}' +
     '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
     'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
     'margin:0 0.43em;}';
   const tempoStyles = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
     `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
-    'line-height:1.2em;color:#222;border:0.16em solid rgba(0,0,0,0);cursor:default;text-align:center;}' +
-    `#${tempoId} > a{color:#0058a5;text-decoration:none;padding:0.75em;margin:0 0.3em;` +
-    'border-radius:0.3em;background:#f2f6fa;z-index:20;}' +
-    `#${tempoId} > a:hover{color:#0058a5;text-decoration:none;background:#d9e6f2;}` +
+    'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;}' +
+    `#${tempoId} > a{color:var(--ds-icon-accent-blue);text-decoration:none;padding:0.75em;margin:0 0.3em;` +
+    'border-radius:0.3em;background:var(--ds-background-subtleNeutral-resting);z-index:20;}' +
+    `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);text-decoration:none;` +
+    'background:var(--ds-background-subtleNeutral-hover);}' +
     `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
-    `#${tempoId} span.inno-orange{background-color:#FDB;border-color:#F96;}` +
-    `#${tempoId} span.inno-red{background-color:#FCC;border-color:#F77;}` +
-    `#${tempoId} span.inno-blue{background-color:#CCF;border-color:#77F;}` +
+    `#${tempoId} span.inno-orange{color:var(--ds-text-accent-orange);` +
+    'background-color:var(--ds-background-accent-orange);border-color:var(--ds-border-accent-orange);}' +
+    `#${tempoId} span.inno-red{color:var(--ds-text-accent-red);` +
+    'background-color:var(--ds-background-accent-red);border-color:var(--ds-border-accent-red);}' +
+    `#${tempoId} span.inno-blue{color:var(--ds-text-accent-blue);` +
+    'background-color:var(--ds-background-accent-blue);border-color:var(--ds-border-accent-blue);}' +
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
-    'color:#0058a5;background:transparent;font-size:0.8em;}' +
-    `#${tempoId} span.inno-refresh:hover{color:#0058a5;background:#d9e6f2;}`;
+    'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
+    `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
+    'background:var(--ds-background-subtleNeutral-hover);}';
   const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
-    'background:rgba(0,0,0,0.4);opacity:1;font-size:12pt;';
+    'background:var(--ds-blanket);opacity:1;font-size:12pt;';
   const configDialogStyles = '.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;' +
-    'background:#FFF;border-radius:15px;border:2px solid #36D;}' +
+    'background:var(--ds-surface-overlay);border-radius:4px;border:2px solid var(--ds-border-bold);' +
+    'color:var(--ds-text);box-shadow:var(--ds-shadow-overlay)}' +
     '.innotitle{font-size:1.6em;padding-top:10px;margin-bottom:1em;}' +
-    'hr{border:1px solid #DDD;margin:10px 0;}' +
+    'hr{border:1px solid var(--ds-text-subtlest);margin:10px 0;}' +
     'h4{margin-top:0;margin-bottom:1em;}' +
-    'input:not([type=checkbox]):not([type=radio]){background:white;color:black;border:1px solid black;' +
-    'border-radius:4px;padding:10px;width:350px;}' +
+    'svg{fill:currentColor;}' +
+    'input:not([type=checkbox]):not([type=radio]){background:var(--ds-background-input);color:var(--ds-text);' +
+    'border:1px solid var(--ds-border-input);border-radius:4px;padding:10px;width:350px;}' +
     'input:[type=checkbox]{width:40px;}' +
     '.help{margin:15px 0;}.buttonrow{margin:10px 0}' +
     '.inno-hidden{display:none;}' +
     `#${extConfigDialogTempoDetailsId}{padding-top:1em;}` +
-    '.is-invalid{border:2px solid #f00;}' +
+    '.is-invalid{border:2px solid var(--ds-border-danger);}' +
     '.bigger{font-size:20pt;}' +
-    'button{margin-right:10px;padding:10px;background:#EEF;cursor:pointer;}';
+    'button{margin-right:10px;padding:10px;background:var(--ds-background-input);cursor:pointer;border-radius:4px;' +
+    'border:1px solid var(--ds-border-input);}' +
+    'button:hover{background:var(--ds-background-input-hovered);}';
   const configMenuItemStyles = `.${configMenuItemId}{display:flex;box-sizing:border-box;width:100%;min-height:40px;` +
     'margin:0px;padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
-    'text-decoration:none;user-select:none;background-color:transparent;color:#0058a5;cursor:pointer;}' +
-    `.${configMenuItemId}:hover{background-color:rgba(0,88,165,0.15);color:#0058a5;text-decoration:none;}` +
-    `.${configMenuItemId}:focus{background-color:transparent;color:#0058a5;text-decoration:none;}`;
+    'text-decoration:none;user-select:none;background-color:transparent;color:currentColor;' +
+    'cursor:pointer;}' +
+    `.${configMenuItemId}:hover{background-color:var(--ds-background-neutral-subtle-hovered);color:currentColor;` +
+    'text-decoration:none;}' +
+    `.${configMenuItemId}:focus{background-color:transparent;color:currentColor;text-decoration:none;}`;
 
   // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
   // The main button (git commit message) cannot be changed or removed.
@@ -553,6 +564,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node label to update.
    */
   function updateTempo(node) {
+    if (!checkForCssVar(node)) {
+      return;
+    }
     if (!isTempoDisabled()) {
       if (isTempoConfigured()) {
         getTempoData(node, false);
@@ -569,6 +583,35 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         node.appendChild(disable);
       }
     }
+  }
+
+  /**
+   * Checks, if css variable "--ds-text" is set in the :root element.
+   * 
+   * @param {Element} node DOM Node for Tempo integration.
+   * @returns {boolean} check is ok.
+   */
+  function checkForCssVar(node) {
+    const styles = getComputedStyle(document.querySelector(':root'));
+    const textvar = styles.getPropertyValue('--ds-text');
+    if(!textvar) {
+      node.innerText = '';
+      node.title = '';
+      node.style = 'background-color:orangered;';
+      const action = document.createElement('span');
+      const pre = document.createTextNode('Aktiviere die Funktion "Helle und dunkle Themes" ');
+      action.appendChild(pre);
+      action.appendChild(document.createElement('br'));
+      const link = document.createElement('a');
+      link.href = '/secure/ViewPersonalSettings.jspa';
+      link.innerText = 'in "Persönliche Einstellungen"';
+      action.appendChild(link);
+      const post = document.createTextNode(' und lade die Seite neu!');
+      action.appendChild(post);
+      node.appendChild(action);
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -707,7 +750,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             if (isCurrentWeek) {
               span.className = 'inno-blue';
             } else {
-              if (missing > 8) {
+              if (missing > -8) {
                 span.className = 'inno-orange';
               } else {
                 span.className = 'inno-red';
