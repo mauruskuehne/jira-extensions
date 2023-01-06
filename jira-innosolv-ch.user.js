@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.4
+// @version     2.0.5
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -51,6 +51,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const extConfigDialogId = 'jiraExtConfigDialog';
   const extConfigDialogEditButtonId = 'jiraExtConfigDialogEditButtonDialog';
   const extConfigDialogTempoDetailsId = 'jiraExtConfigDialogTempoDetails';
+  const extConfigDialogTempoApproverId = 'jiraExtConfigDialogTempoApprover';
   // tempo integration id
   const tempoId = 'inno-tempo';
   // configuration menu item id
@@ -114,6 +115,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'border-radius:0.3em;background:var(--ds-background-subtleNeutral-resting);z-index:20;}' +
     `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);text-decoration:none;` +
     'background:var(--ds-background-subtleNeutral-hover);}' +
+    `#${tempoId} .inno-cursor {cursor:pointer;}` +
     `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
     `#${tempoId} span.inno-orange{color:var(--ds-text-accent-orange);` +
     'background-color:var(--ds-background-accent-orange);border-color:var(--ds-border-accent-orange);}' +
@@ -127,7 +129,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'background:var(--ds-background-subtleNeutral-hover);}';
   const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
     'background:var(--ds-blanket);opacity:1;font-size:12pt;';
-  const configDialogStyles = '.inno-dlg{width:400px;position:relative;margin:10% auto;padding:0 20px 20px;' +
+  const configDialogStyles = '.inno-dlg{width:500px;position:relative;margin:10% auto;padding:0 20px 20px;' +
     'background:var(--ds-surface-overlay);border-radius:4px;border:2px solid var(--ds-border-bold);' +
     'color:var(--ds-text);box-shadow:var(--ds-shadow-overlay)}' +
     '.innotitle{font-size:1.6em;padding-top:10px;margin-bottom:1em;}' +
@@ -135,11 +137,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'h4{margin-top:0;margin-bottom:1em;}' +
     'svg{fill:currentColor;}' +
     'input:not([type=checkbox]):not([type=radio]){background:var(--ds-background-input);color:var(--ds-text);' +
-    'border:1px solid var(--ds-border-input);border-radius:4px;padding:10px;width:350px;}' +
+    'border:1px solid var(--ds-border-input);border-radius:4px;padding:10px;width:450px;}' +
     'input:[type=checkbox]{width:40px;}' +
+    'label{display:inline-block;}' +
     '.help{margin:15px 0;}.buttonrow{margin:10px 0}' +
     '.inno-hidden{display:none;}' +
-    `#${extConfigDialogTempoDetailsId}{padding-top:1em;}` +
+    '.inno-margintop{margin-top:1em;}' +
     '.is-invalid{border:2px solid var(--ds-border-danger);}' +
     '.bigger{font-size:20pt;}' +
     'button{margin-right:10px;padding:10px;background:var(--ds-background-input);cursor:pointer;border-radius:4px;' +
@@ -152,6 +155,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     `.${configMenuItemId}:hover{background-color:var(--ds-background-neutral-subtle-hovered);color:currentColor;` +
     'text-decoration:none;}' +
     `.${configMenuItemId}:focus{background-color:transparent;color:currentColor;text-decoration:none;}`;
+
+  const configHelpText1 = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
+    'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen ' +
+    '(und verwalten, falls "Periode einreichen" möglich sein soll) /\n' +
+    'Bereich für Zeiträume: Zeiträume anzeigen /\nBereich der Zeitnachweise: Zeitnachweise anzeigen\'\n' +
+    '➡ Bestätigen \n➡ Kopieren';
 
   // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
   // The main button (git commit message) cannot be changed or removed.
@@ -171,6 +180,46 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   // The "text", "title" and "format" fields support emoji.
   //
   // Using "GM_setValue" (example above) persists the data even if the userscript is changed or updated.
+
+  class CachedTempoApproval {
+    /**
+     * @class CachedTempoApproval
+     * @param {string} cache datetime string of cache expiration
+     * @param {number} required number of seconds
+     * @param {number} logged number of seconds
+     * @param {string} statusKey status of period
+     * @param {string|null} submitAction url to submit period for review
+     */
+    constructor(cache, required, logged, statusKey, submitAction) {
+      /** @type {string} */
+      this.cache = cache;
+      /** @type {number} */
+      this.required = required;
+      /** @type {number} */
+      this.logged = logged;
+      /** @type {string} */
+      this.statusKey = statusKey;
+      /** @type {string|null} */
+      this.submitAction = submitAction;
+    }
+  }
+
+  class TempoPeriod {
+    /**
+     * @class TempoPeriod
+     * @param {string} from date string
+     * @param {string} to date string
+     */
+    constructor(from, to) {
+      /** @type {string} */
+      this.from = from;
+      /** @type {string} */
+      this.to = to;
+    }
+    fromKey() {
+      return this.from.replace(/-/g, '');
+    }
+  }
 
   /**
    * Momentarily changes button background to green/red, to inform the user of the result of the process.
@@ -376,6 +425,33 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Creates a DOM Node with class and inner text.
+   * 
+   * @param {string} type DOM Element type
+   * @param {string|undefined} cls ClassName of element
+   * @param {string|undefined} txt InnerText of element
+   * @param {string|undefined} id ID of element
+   * @param {string|undefined} title Title of element
+   * @returns {Element} DOM Element
+   */
+  function createNode(type, cls, txt, id, title) {
+    const ret = document.createElement(type);
+    if (cls) {
+      ret.className = cls;
+    }
+    if (txt) {
+      ret.innerText = txt;
+    }
+    if (id) {
+      ret.id = id;
+    }
+    if (title) {
+      ret.title = title;
+    }
+    return ret;
+  }
+
+  /**
    * Button definition
    * 
    * @typedef {object} buttonDefinition
@@ -401,28 +477,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.removeAttribute('data-editing-id');
     }
     if (message) {
-      const errDiv = document.createElement('div');
-      errDiv.className = 'is-error';
-      const errMsg = document.createElement('p');
-      errMsg.innerText = message;
-      errDiv.appendChild(errMsg);
+      const errDiv = createNode('div', 'is-error');
+      errDiv.appendChild(createNode('p', undefined, message));
       node.appendChild(errDiv);
     } else {
       node.setAttribute('data-editing-id', id);
-      const editDiv = document.createElement('div');
-      editDiv.className = 'editForm';
+      const editDiv = createNode('div', 'editForm');
       addLabelAndInput(editDiv, 'buttonText', 'Text', buttonDefinition.text);
       addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title, true);
       addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format, true);
       addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
-      const actions = document.createElement('div');
-      actions.className = 'buttonrow';
-      const save = document.createElement('button');
-      save.innerText = 'save changes';
+      const actions = createNode('div', 'buttonrow');
+      const save = createNode('button', undefined, 'save changes');
       save.onclick = function () { window.alert('not implemented.'); };
       actions.appendChild(save);
-      const del = document.createElement('button');
-      del.innerText = 'delete';
+      const del = createNode('button', undefined, 'delete');
       del.onclick = function () { window.alert('not implemented.'); };
       actions.appendChild(del);
       editDiv.appendChild(actions);
@@ -440,13 +509,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} specialChars handle special chars like \t \r \n
    */
   function addLabelAndInput(node, id, title, value, specialChars = false) {
-    const label = document.createElement('label');
+    const label = createNode('label', undefined, title + ':');
     label.setAttribute('for', id);
-    label.innerText = title + ':';
     node.appendChild(label);
-    const input = document.createElement('input');
+    const input = createNode('input', undefined, undefined, id);
     input.type = 'text';
-    input.id = id;
     input.value = specialChars ? transformSpecialChars(value) : value;
     node.appendChild(input);
   }
@@ -488,17 +555,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
     const commitButtonId = preview ? 'commit-header-btn' : 'commit-header-btn-preview';
     if (!document.getElementById(commitButtonId)) {
-      const style = document.createElement('style');
-      style.innerText = copyButtonStyles;
-      node.appendChild(style);
+      node.appendChild(createNode('style', undefined, copyButtonStyles));
 
       const createBtn = function (id, buttondef) {
-        const btn = document.createElement('button');
-        btn.id = id;
-        btn.className = 'inno-btn';
-        btn.title = buttondef.title;
+        const btn = createNode('button', 'inno-btn', undefined, id, buttondef.title);
         btn.setAttribute('data-format', buttondef.format);
-        const lbl = document.createElement('span');
+        const lbl = createNode('span');
         if (buttondef.icon) {
           lbl.innerHTML = buttondef.icon;
         } else {
@@ -515,8 +577,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         return btn;
       };
 
-      const container = document.createElement('div');
-      container.className = 'inno-btn-container';
+      const container = createNode('div', 'inno-btn-container');
       // create main button
       container.appendChild(
         createBtn(commitButtonId, defaultButton)
@@ -542,14 +603,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
 
     if (!document.getElementById(tempoId)) {
-      const style = document.createElement('style');
-      style.innerText = tempoStyles;
-      node.appendChild(style);
+      node.appendChild(createNode('style', undefined, tempoStyles));
 
-      const span = document.createElement('span');
-      span.id = tempoId;
-      span.title = 'innoTempo: initializing…';
-      span.innerText = 'innoTempo…';
+      const span = createNode('span', undefined, 'innoTempo…', tempoId, 'innoTempo: initializing…');
       node.appendChild(span);
       if (tempoUpdateTimer) {
         clearTimeout(tempoUpdateTimer);
@@ -572,14 +628,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         getTempoData(node, false);
       } else {
         node.innerText = 'innoTempo: ➡ configure Jira Extension in profile menu. ';
-        const disable = document.createElement('a');
+        const disable = createNode('a', undefined, 'or disable.');
         disable.href = '#';
         disable.onclick = () => {
           setTempoDisabled(true);
           node.innerText = 'innoTempo: integration disabled - refresh…';
           return false;
         };
-        disable.innerText = 'or disable.';
         node.appendChild(disable);
       }
     }
@@ -594,17 +649,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function checkForCssVar(node) {
     const styles = getComputedStyle(document.querySelector(':root'));
     const textvar = styles.getPropertyValue('--ds-text');
-    if(!textvar) {
+    if (!textvar) {
       node.innerText = '';
       node.title = '';
       node.style = 'background-color:orangered;';
-      const action = document.createElement('span');
+      const action = createNode('span');
       const pre = document.createTextNode('Aktiviere die Funktion "Helle und dunkle Themes" ');
       action.appendChild(pre);
-      action.appendChild(document.createElement('br'));
-      const link = document.createElement('a');
+      action.appendChild(createNode('br'));
+      const link = createNode('a', undefined, 'in "Persönliche Einstellungen"');
       link.href = '/secure/ViewPersonalSettings.jspa';
-      link.innerText = 'in "Persönliche Einstellungen"';
       action.appendChild(link);
       const post = document.createTextNode(' und lade die Seite neu!');
       action.appendChild(post);
@@ -717,7 +771,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.title = '';
 
       if (!periods) {
-        const err = document.createElement('span');
+        const err = createNode('span');
         err.innerHTML = 'Error retrieving periods from tempo api.<br>Check your browser logs!';
         node.appendChild(err);
         return;
@@ -726,23 +780,29 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       if (now.getDay() == 1 || now.getDay() == 2) { // Mon/Tue => ignore last (current) period.
         periods.pop();
       }
-      const displayPeriods = periods.slice(-3);
+      const displayPeriods = periods.slice(-4);
       // Tempo app link
-      const lnk = document.createElement('a');
+      const lnk = createNode('a', undefined, undefined, undefined, 'Open Tempo app');
       lnk.href = tempoLink;
-      lnk.title = 'Open Tempo app';
       lnk.innerHTML = svgTempo;
       node.appendChild(lnk);
       const periodsSeen = [];
       try {
         for (const p of displayPeriods) {
-          periodsSeen.push(getFromKey(p));
+          periodsSeen.push(p.fromKey());
           const approvalStatus = await getApprovalStatus(p, forceUpdate);
           if (approvalStatus.statusKey == 'OPEN') {
             const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
             const isCurrentWeek = new Date() < toDate;
-            const span = document.createElement('span');
-            span.innerHTML = `${toDate.getDate()}.${toDate.getMonth() + 1}.<br>${approvalStatus.statusKey}`;
+            const span = createNode('span');
+            span.appendChild(document.createTextNode(`${toDate.getDate()}.${toDate.getMonth() + 1}.`));
+            span.appendChild(createNode('br'));
+            span.appendChild(document.createTextNode('Open'));
+            if (!isCurrentWeek && approvalStatus.submitAction && hasApprover()) {
+              const einreichen = createNode('strong', 'inno-cursor', '👌', undefined, 'Periode einreichen');
+              einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
+              span.appendChild(einreichen);
+            }
             let missing = -(((approvalStatus.required - approvalStatus.logged) / 60 / 60).toFixed(2));
             if (missing > 0) {
               missing = 0;
@@ -764,10 +824,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             node.appendChild(span);
           }
         }
-        const refresh = document.createElement('span');
+        const refresh = createNode('span', 'inno-refresh', undefined, undefined, 'force update');
         refresh.innerHTML = svgRefresh;
-        refresh.className = 'inno-refresh';
-        refresh.title = 'force update';
         refresh.onclick = () => { getTempoData(node, true); };
         node.appendChild(refresh);
       } catch (e) {
@@ -781,19 +839,99 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Check if approver has been set.
+   * 
+   * @returns {boolean} approver has been set.
+   */
+  function hasApprover() {
+    const ret = GM_getValue('tempoApprover', '');
+    return !!ret;
+  }
+
+  /**
+   * Get approver value.
+   * 
+   * @returns {string} tempo time sheet approver.
+   */
+  function getApprover() {
+    return GM_getValue('tempoApprover', '');
+  }
+
+  /**
+   * Sets the approver value.
+   * 
+   * @param {string} approver tempo time sheet approver.
+   */
+  function setApprover(approver) {
+    GM_setValue('tempoApprover', approver);
+  }
+
+  /**
+   * Submits a period for approval.
+   * 
+   * @param {TempoPeriod} period to submit for approval.
+   * @param {string} actionUrl action to use for approval request.
+   */
+  function sendInForApproval(period, actionUrl) {
+    if (actionUrl) {
+      if (confirm(`Send Period ${period.from} - ${period.to} for approval?`) == true) {
+        GM_xmlhttpRequest({
+          method: 'POST',
+          url: actionUrl,
+          data: `{"comment":"jira extension","reviewerAccountId": "${getApprover()}"}`,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${GM_getValue('tempoToken', '')}`
+          },
+          responseType: 'json',
+          onload: (resp) => {
+            if (resp.status == 200) {
+              const cacheExp = new Date();
+              cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
+              const submitAction = resp.response.actions ?
+                (resp.response.actions.submit ? (resp.response.actions.submit.self) : null) : null;
+              const ret = new CachedTempoApproval(
+                cacheExp.toISOString(),
+                resp.response.requiredSeconds,
+                resp.response.timeSpentSeconds,
+                resp.response.status.key,
+                submitAction
+              );
+              saveApprovalStatus(period.fromKey(), ret);
+              window.alert(`great success 😊 (refresh periods to update display) ${resp.response.status}`);
+            } else {
+              GM_log(`innoTempo: error submitting period for review.
+            status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
+            }
+          }
+        });
+      }
+    } else {
+      GM_log('innoTempo: error submitting period (missing submit action)!');
+    }
+  }
+
+  /**
    * Gets available "periods" from tempo api.
    * 
    * @param {Date} now current Date (for easeier access).
    * @param {boolean} forceUpdate forces update (ignore cache).
    * @param {string} withToken forces http request with this token, ignores cache.
-   * @returns {Promise} tempo periods within the past month.
+   * @returns {Promise<TempoPeriod[]>} tempo periods within the past month.
    */
   function getTempoPeriods(now, forceUpdate, withToken) {
     return new Promise((resolve, reject) => {
       const cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
       const cachedDate = new Date(cachedPeriods.cache);
       if (cachedDate > now && !withToken && !forceUpdate) {
-        resolve(cachedPeriods.periods);
+        /** @type {TempoPeriod[]} */
+        const periods = [];
+        for (let i = 0; i < cachedPeriods.periods.length; i++) {
+          const period = cachedPeriods.periods[i];
+          periods.push(new TempoPeriod(period.from, period.to));
+        }
+        resolve(periods);
         return;
       } else {
         const oneMonthAgo = new Date();
@@ -812,8 +950,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             if (resp.status == 200) {
               const cacheExp = new Date();
               cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
-              GM_setValue('tempoPeriods', { cache: getYMD(cacheExp), periods: resp.response.periods });
-              resolve(resp.response.periods);
+              /** @type {TempoPeriod[]} */
+              const periods = [];
+              for (let i = 0; i < resp.response.periods.length; i++) {
+                const period = resp.response.periods[i];
+                periods.push(new TempoPeriod(period.from, period.to));
+              }
+              GM_setValue('tempoPeriods', { cache: getYMD(cacheExp), periods: periods });
+              resolve(periods);
             } else {
               GM_log(`innoTempo: error fetching periods.
             status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
@@ -828,14 +972,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   /**
    * Gets approval status of one period.
    * 
-   * @param {period} period current period.
+   * @param {TempoPeriod} period current period.
    * @param {boolean} forceUpdate force update (ignore cache).
-   * @returns {Promise} approval status of period.
+   * @returns {Promise<CachedTempoApproval>} approval status of period.
    */
   function getApprovalStatus(period, forceUpdate) {
     return new Promise((resolve, reject) => {
       const approvals = getApprovalStatusAll();
-      const fromKey = getFromKey(period);
+      const fromKey = period.fromKey();
       if (approvals[fromKey]) {
         const approval = approvals[fromKey];
         const cachedDate = new Date(approval.cache);
@@ -857,12 +1001,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           if (resp.status == 200) {
             const cacheExp = new Date();
             cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
-            const ret = {
-              cache: cacheExp.toISOString(),
-              required: resp.response.requiredSeconds,
-              logged: resp.response.timeSpentSeconds,
-              statusKey: resp.response.status.key
-            };
+            const submitAction = resp.response.actions ?
+              (resp.response.actions.submit ? (resp.response.actions.submit.self) : null) : null;
+            const ret = new CachedTempoApproval(
+              cacheExp.toISOString(),
+              resp.response.requiredSeconds,
+              resp.response.timeSpentSeconds,
+              resp.response.status.key,
+              submitAction
+            );
             saveApprovalStatus(fromKey, ret);
             resolve(ret);
           } else {
@@ -888,7 +1035,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Stores the approval data.
    * 
    * @param {string} key for storage.
-   * @param {any} approval data.
+   * @param {CachedTempoApproval} approval data.
    */
   function saveApprovalStatus(key, approval) {
     const approvals = getApprovalStatusAll();
@@ -916,16 +1063,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * Gets the "from" key of the period for storage.
-   * 
-   * @param {any} p time period.
-   * @returns {string} identification key.
-   */
-  function getFromKey(p) {
-    return p.from.replace(/-/g, '');
-  }
-
-  /**
    * Checks configuration values for changes, saves configuration and closes the dialog.
    */
   function saveAndCloseInnoExtensionConfigDialog() {
@@ -935,6 +1072,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (currentDisabled !== settingDisabled) {
       hasChanges = true;
       setTempoDisabled(settingDisabled);
+    }
+    const currentApprover = getApprover();
+    const settingApprover = document.getElementById(extConfigDialogTempoApproverId).value;
+    if (currentApprover !== settingApprover) {
+      hasChanges = true;
+      setApprover(settingApprover);
     }
 
     if (hasChanges) {
@@ -989,26 +1132,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function showInnoExtensionConfigDialog(e) {
     if (!document.getElementById(extConfigDialogId)) {
-      const background = document.createElement('div');
+      const background = createNode('div', undefined, undefined, extConfigDialogId);
       background.setAttribute('style', configDialogBackgroundStyles);
-      background.id = extConfigDialogId;
-      const style = document.createElement('style');
-      style.innerText = configDialogStyles;
-      background.appendChild(style);
-      const dlg = document.createElement('div');
-      dlg.className = 'inno-dlg';
+      background.appendChild(createNode('style', undefined, configDialogStyles));
+      const dlg = createNode('div', 'inno-dlg');
 
-      const title = document.createElement('h3');
-      title.className = 'innotitle';
-      title.innerText = 'jira Extension Configuration';
-      dlg.appendChild(title);
-      dlg.appendChild(document.createElement('hr'));
-      const tokenTitle = document.createElement('h4');
-      tokenTitle.innerText = 'Tempo integration';
-      dlg.appendChild(tokenTitle);
-      const enabledInput = document.createElement('input');
+      dlg.appendChild(createNode('h3', 'innotitle', 'jira Extension Configuration'));
+      dlg.appendChild(createNode('hr'));
+      dlg.appendChild(createNode('h4', undefined, 'Tempo integration'));
+      const enabledInput = createNode('input', undefined, undefined, 'tempoIntegrationEnabled');
       enabledInput.type = 'checkbox';
-      enabledInput.id = 'tempoIntegrationEnabled';
       enabledInput.value = '1';
       const tempoDisabled = isTempoDisabled();
       if (!tempoDisabled) {
@@ -1020,51 +1153,46 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         toggleClass(grp, 'inno-hidden', !isChecked);
       };
       dlg.appendChild(enabledInput);
-      const enabledLabel = document.createElement('label');
-      enabledLabel.innerText = 'Tempo integration enabled';
+      const enabledLabel = createNode('label', undefined, 'Tempo integration enabled');
       enabledLabel.setAttribute('for', 'tempoIntegrationEnabled');
       dlg.appendChild(enabledLabel);
-      const tempoGroup = document.createElement('div');
-      tempoGroup.id = extConfigDialogTempoDetailsId;
-      if (tempoDisabled) {
-        tempoGroup.className = 'inno-hidden';
-      }
-      const lbl = document.createElement('label');
-      lbl.innerText = 'Tempo API Token:';
-      lbl.className = 'inno-margintop';
+      const tempoGroup = createNode(
+        'div',
+        tempoDisabled ? 'inno-hidden' : undefined,
+        undefined,
+        extConfigDialogTempoDetailsId
+      );
+      const lbl = createNode('label', 'inno-margintop', 'Tempo API Token:');
       lbl.setAttribute('for', 'tempoTokenInput');
       tempoGroup.appendChild(lbl);
-      const inp = document.createElement('input');
+      const inp = createNode('input', undefined, undefined, 'tempoTokenInput');
       inp.type = 'text';
-      inp.id = 'tempoTokenInput';
       inp.value = GM_getValue('tempoToken', '');
       inp.placeholder = 'tempo token';
       tempoGroup.appendChild(inp);
-      const a = document.createElement('a');
+      const a = createNode('a', undefined, 'open tempo configuration dialog in new tab');
       a.href = tempoConfigLink;
       a.target = '_blank';
-      a.innerText = 'open tempo configuration dialog in new tab';
       tempoGroup.appendChild(a);
       const helpId = 'inno-tempo-config-help';
-      const helpToggle = document.createElement('div');
+      const helpToggle = createNode('div');
       helpToggle.onclick = () => {
         const helpNode = document.getElementById(helpId);
         toggleClass(helpNode, 'inno-hidden');
       };
       helpToggle.innerHTML = svgInfoCircle;
       tempoGroup.appendChild(helpToggle);
-      const help = document.createElement('div');
-      help.id = helpId;
-      help.className = 'help inno-hidden';
-      help.innerText = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
-        'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff, \'Genehmigungsbereich: Genehmigungen anzeigen / ' +
-        'Bereich für Zeiträume: Zeiträume anzeigen / Bereich der Zeitnachweise: Zeitnachweise anzeigen\' \n' +
-        '➡ Bestätigen \n➡ Kopieren';
-      tempoGroup.appendChild(help);
-      const btnRow = document.createElement('div');
-      btnRow.className = 'buttonrow';
-      const btn = document.createElement('button');
-      btn.innerText = 'check and save token';
+      tempoGroup.appendChild(createNode('div', 'help inno-hidden', configHelpText1, helpId));
+      const approverLbl = createNode('label', 'inno-margintop', 'Timesheet Approver (User ID):');
+      approverLbl.setAttribute('for', extConfigDialogTempoApproverId);
+      tempoGroup.appendChild(approverLbl);
+      const approverInp = createNode('input', undefined, undefined, extConfigDialogTempoApproverId);
+      approverInp.type = 'text';
+      approverInp.value = getApprover();
+      approverInp.placeholder = 'Timesheet Approver (User ID)';
+      tempoGroup.appendChild(approverInp);
+      const btnRow = createNode('div', 'buttonrow');
+      const btn = createNode('button', undefined, 'check and save tempo data');
       btn.onclick = async function () {
         try {
           const inp = document.getElementById('tempoTokenInput');
@@ -1085,26 +1213,18 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       btnRow.appendChild(btn);
       tempoGroup.appendChild(btnRow);
       dlg.appendChild(tempoGroup);
-      dlg.appendChild(document.createElement('hr'));
-      const buttonTitle = document.createElement('h4');
-      buttonTitle.innerText = 'Edit Buttons (preview)';
-      dlg.appendChild(buttonTitle);
-      const previewDiv = document.createElement('div');
-      previewDiv.className = 'bigger';
+      dlg.appendChild(createNode('hr'));
+      dlg.appendChild(createNode('h4', undefined, 'Edit Buttons (preview)'));
+      const previewDiv = createNode('div', 'bigger');
       dlg.appendChild(previewDiv);
       addCopyButtons(previewDiv, true);
-      const editDlgDiv = document.createElement('div');
-      editDlgDiv.id = extConfigDialogEditButtonId;
-      dlg.appendChild(editDlgDiv);
-      dlg.appendChild(document.createElement('hr'));
-      const closeRow = document.createElement('div');
-      closeRow.className = 'buttonrow';
-      const save = document.createElement('button');
-      save.innerText = 'save and close';
+      dlg.appendChild(createNode('div', undefined, undefined, extConfigDialogEditButtonId));
+      dlg.appendChild(createNode('hr'));
+      const closeRow = createNode('div', 'buttonrow');
+      const save = createNode('button', undefined, 'save and close');
       save.onclick = saveAndCloseInnoExtensionConfigDialog;
       closeRow.appendChild(save);
-      const close = document.createElement('button');
-      close.innerText = 'cancel and close';
+      const close = createNode('button', undefined, 'cancel and close');
       close.onclick = closeInnoExtensionConfigDialog;
       closeRow.appendChild(close);
       dlg.appendChild(closeRow);
@@ -1131,14 +1251,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (headerText == 'KONTO' || headerText == 'ACCOUNT') {
       if (!document.getElementById(configMenuItemId)) {
         const parent = node.parentNode;
-        const style = document.createElement('style');
-        style.innerText = configMenuItemStyles;
-        parent.appendChild(style);
-        const lnk = document.createElement('a');
-        lnk.id = configMenuItemId;
-        lnk.className = configMenuItemId;
+        parent.appendChild(createNode('style', undefined, configMenuItemStyles));
+        const lnk = createNode('a', configMenuItemId, '⚙ Jira Extension', configMenuItemId);
         lnk.href = '#';
-        lnk.innerText = '⚙ Jira Extension';
         lnk.onclick = showInnoExtensionConfigDialog;
         parent.appendChild(lnk);
       }
