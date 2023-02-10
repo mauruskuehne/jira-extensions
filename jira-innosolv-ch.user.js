@@ -741,7 +741,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {string} date in the format of "yyyy-MM-dd".
    */
   function getYMD(date) {
-    return `${date.getFullYear()}-${lZero(date.getMonth()+1)}-${lZero(date.getDate())}`;
+    return `${date.getFullYear()}-${lZero(date.getMonth() + 1)}-${lZero(date.getDate())}`;
   }
 
   /**
