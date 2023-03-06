@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.6
+// @version     2.0.7
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -147,7 +147,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '.bigger{font-size:20pt;}' +
     'button{margin-right:10px;padding:10px;background:var(--ds-background-input);cursor:pointer;border-radius:4px;' +
     'border:1px solid var(--ds-border-input);}' +
-    'button:hover{background:var(--ds-background-input-hovered);}';
+    'button:hover{background:var(--ds-background-input-hovered);}' +
+    '.inno-savebtn{background:var(--ds-background-success);border:1px solid var(--ds-border-success);' +
+    'color:var(--ds-text-success);}' +
+    '.inno-savebtn:hover{background:var(--ds-background-success-hovered);}' +
+    '.inno-delbtn{background:var(--ds-background-danger);border:1px solid var(--ds-border-danger);' +
+    'color:var(--ds-text-danger);}' +
+    '.inno-delbtn:hover{background:var(--ds-background-danger-hovered);}';
   const configMenuItemStyles = `.${configMenuItemId}{display:flex;box-sizing:border-box;width:100%;min-height:40px;` +
     'margin:0px;padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
     'text-decoration:none;user-select:none;background-color:transparent;color:currentColor;' +
@@ -488,11 +494,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format, true);
       addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
       const actions = createNode('div', 'buttonrow');
-      const save = createNode('button', undefined, 'save changes');
-      save.onclick = function () { window.alert('not implemented.'); };
+      const save = createNode('button', 'inno-savebtn', 'save changes');
+      save.onclick = () => window.alert('not implemented.');
       actions.appendChild(save);
-      const del = createNode('button', undefined, 'delete');
-      del.onclick = function () { window.alert('not implemented.'); };
+      const del = createNode('button', 'inno-delbtn', 'delete');
+      del.onclick = () => window.alert('not implemented.');
       actions.appendChild(del);
       editDiv.appendChild(actions);
       node.appendChild(editDiv);
@@ -1180,6 +1186,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         const helpNode = document.getElementById(helpId);
         toggleClass(helpNode, 'inno-hidden');
       };
+      helpToggle.title = 'click for more info.';
       helpToggle.innerHTML = svgInfoCircle;
       tempoGroup.appendChild(helpToggle);
       tempoGroup.appendChild(createNode('div', 'help inno-hidden', configHelpText1, helpId));
@@ -1192,7 +1199,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       approverInp.placeholder = 'Timesheet Approver (User ID)';
       tempoGroup.appendChild(approverInp);
       const btnRow = createNode('div', 'buttonrow');
-      const btn = createNode('button', undefined, 'check and save tempo data');
+      const btn = createNode('button', 'inno-savebtn', 'check and save tempo data');
       btn.onclick = async function () {
         try {
           const inp = document.getElementById('tempoTokenInput');
@@ -1221,7 +1228,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       dlg.appendChild(createNode('div', undefined, undefined, extConfigDialogEditButtonId));
       dlg.appendChild(createNode('hr'));
       const closeRow = createNode('div', 'buttonrow');
-      const save = createNode('button', undefined, 'save and close');
+      const save = createNode('button', 'inno-savebtn', 'save and close');
       save.onclick = saveAndCloseInnoExtensionConfigDialog;
       closeRow.appendChild(save);
       const close = createNode('button', undefined, 'cancel and close');
