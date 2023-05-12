@@ -774,7 +774,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           if (approvalStatus.statusKey == 'OPEN') {
             const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
             const isCurrentWeek = new Date() < toDate;
-            const isTooOld = toDate < new Date(Date.now() - 604800000);
+            const fromDate = new Date(p.from.slice(0, 4), Number(p.from.slice(-5).slice(0, 2)) - 1, p.from.slice(-2));
+            // start of period was more than 2 weeks ago - and thus should be closed immediately.
+            const isTooOld = fromDate < new Date(Date.now() - (14 * 24 * 60 * 60 * 1000));
             const span = createNode('span');
             span.appendChild(
               document.createTextNode(`${isTooOld ? '❌ ' : ''}${toDate.getDate()}.${toDate.getMonth() + 1}.`)
@@ -782,7 +784,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             span.appendChild(createNode('br'));
             span.appendChild(document.createTextNode('Open'));
             if (!isCurrentWeek && approvalStatus.submitAction && hasApprover()) {
-              const einreichen = createNode('strong', 'inno-cursor', '😇', undefined, 'Periode einreichen');
+              const einreichen = createNode('strong', 'inno-cursor', '📨', undefined, 'Periode einreichen');
               einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
               span.appendChild(einreichen);
             }
