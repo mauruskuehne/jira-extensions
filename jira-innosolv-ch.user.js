@@ -832,7 +832,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             const lastUpdate = new Date(approvalStatus.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
             span.title = (isCurrentWeek ? 'Current week\n' : '') +
-              (isTooOld ? 'Do it now‼️\n':'') +
+              (isTooOld ? 'Do it now‼️\n' : '') +
               `${missing} hours\n` +
               `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
             node.appendChild(span);
