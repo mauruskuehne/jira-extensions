@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.7
+// @version     2.0.8
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -121,8 +121,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'background-color:var(--ds-background-accent-orange);border-color:var(--ds-border-accent-orange);}' +
     `#${tempoId} span.inno-red{color:var(--ds-text-accent-red);` +
     'background-color:var(--ds-background-accent-red);border-color:var(--ds-border-accent-red);}' +
-    `#${tempoId} span.inno-blue{color:var(--ds-text-accent-blue);` +
-    'background-color:var(--ds-background-accent-blue);border-color:var(--ds-border-accent-blue);}' +
+    `#${tempoId} span.inno-yellow{color:var(--ds-text-accent-yellow);` +
+    'background-color:var(--ds-background-accent-yellow);border-color:var(--ds-border-accent-yellow);}' +
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
@@ -229,6 +229,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Momentarily changes button background to green/red, to inform the user of the result of the process.
+   * 
    * @param {Event} e click event
    * @param {boolean} success result of the process
    */
@@ -252,6 +253,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Jira issue data object
+   * 
    * @typedef {object} jiraIssueData
    * @property {string} title of jira issue
    * @property {string} jiraNumber id of jira issue
@@ -259,6 +261,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   /**
    * Gets the Title, JIRA "Number" (ID, such as SU-1000), and prefix.
+   * 
    * @returns {jiraIssueData|undefined} data of current jira issue.
    */
   function getData() {
@@ -302,6 +305,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets the Title, JIRA ID and title using the provided format.
+   * 
    * @param {string} format of the text
    * @returns {string|false} formatted value or false if data could not be gathered.
    */
@@ -319,6 +323,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets the parent node with nodeName == @name
+   * 
    * @param {Element} node to search parent
    * @param {string} name what to search for
    * @param {number} search current search depth
@@ -347,6 +352,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Click event for copy buttons.
+   * 
    * @param {Event} e click event
    */
   function buttonClicked(e) {
@@ -376,6 +382,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds a class to the classList of the node and removes this class from any siblings that have it assigned.
+   * 
    * @param {Element} node to handle.
    * @param {string} className to clear from siblings and add to node.
    */
@@ -391,6 +398,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Click event for copy buttons in preview mode.
+   * 
    * @param {Event} e click event
    */
   function buttonClickedPreview(e) {
@@ -424,6 +432,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Creates a DOM Node with class and inner text.
+   * 
    * @param {string} type DOM Element type
    * @param {string|undefined} cls ClassName of element
    * @param {string|undefined} txt InnerText of element
@@ -450,6 +459,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Button definition
+   * 
    * @typedef {object} buttonDefinition
    * @property {string} text to display on button, if @icon is not set
    * @property {string} title (tooltip) of button
@@ -458,6 +468,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   /**
    * Creates an edit form for a custom button.
+   * 
    * @param {Element} node container to add the edit form or error message to.
    * @param {buttonDefinition|undefined} buttonDefinition definition of button.
    * @param {string|undefined} message error message to display.
@@ -496,6 +507,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds a label and input element to the (button-) edit dialog.
+   * 
    * @param {Element} node container to add the label and input to.
    * @param {string} id node id for input element.
    * @param {string} title of the label.
@@ -514,6 +526,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * transforms special characters like \t \r or \n back to readable/editable characters.
+   * 
    * @param {string} value string containing original value including tab and line-feed characters.
    * @returns {string} formatted value with readable tab and line-feed characters.
    */
@@ -526,6 +539,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks the location.pathname for ignored patterns (disabledUrls). Returns true if it matches.
+   * 
    * @returns {boolean} current location path should be ignored.
    */
   function isIgnoredPath() {
@@ -536,6 +550,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds configured copy buttons and styling to node.
+   * 
    * @param {Element} node container to add the buttons to.
    * @param {boolean} preview preparation for configuration dialog
    */
@@ -585,6 +600,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds Tempo integration label to header
+   * 
    * @param {Element} node container for label
    */
   function addTempoIntegration(node) {
@@ -606,6 +622,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Update label with data from API.
+   * 
    * @param {Element} node label to update.
    */
   function updateTempo(node) {
@@ -631,6 +648,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if css variable "--ds-text" is set in the :root element.
+   * 
    * @param {Element} node DOM Node for Tempo integration.
    * @returns {boolean} check is ok.
    */
@@ -658,6 +676,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks if tempo integration is disabled.
+   * 
    * @returns {boolean} tempo integration is disabled.
    */
   function isTempoDisabled() {
@@ -666,6 +685,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores the state of "tempoDisabled".
+   * 
    * @param {boolean} disabled state.
    */
   function setTempoDisabled(disabled) {
@@ -674,6 +694,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores the tempo access token for the api.
+   * 
    * @param {string} token to access tempo api.
    */
   function setTempoToken(token) {
@@ -682,6 +703,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if the provided token can access the tempo api, stores the token on success.
+   * 
    * @param {string} token to check and store if request was successful.
    * @returns {Promise<boolean>} success state.
    */
@@ -706,6 +728,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if the configuration for tempo integration is complete.
+   * 
    * @returns {boolean} Configuration is complete.
    */
   function isTempoConfigured() {
@@ -719,6 +742,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Get string formatted date.
+   * 
    * @param {Date} date to translate.
    * @returns {string} date in the format of "yyyy-MM-dd".
    */
@@ -728,6 +752,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds a leading zero if needed.
+   * 
    * @param {number} num number to add a leading zero to.
    * @returns {string} number with leading zero.
    */
@@ -737,6 +762,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gathers approval data (past 3 periods) from tempo API and displays it.
+   * 
    * @param {Element} node container for display.
    * @param {boolean} forceUpdate force update (ignore cache).
    */
@@ -774,12 +800,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           if (approvalStatus.statusKey == 'OPEN') {
             const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
             const isCurrentWeek = new Date() < toDate;
+            const isTooOld = toDate < new Date(Date.now() - 604800000);
             const span = createNode('span');
-            span.appendChild(document.createTextNode(`${toDate.getDate()}.${toDate.getMonth() + 1}.`));
+            span.appendChild(
+              document.createTextNode(`${isTooOld ? '❌ ' : ''}${toDate.getDate()}.${toDate.getMonth() + 1}.`)
+            );
             span.appendChild(createNode('br'));
             span.appendChild(document.createTextNode('Open'));
             if (!isCurrentWeek && approvalStatus.submitAction && hasApprover()) {
-              const einreichen = createNode('strong', 'inno-cursor', '👌', undefined, 'Periode einreichen');
+              const einreichen = createNode('strong', 'inno-cursor', '😇', undefined, 'Periode einreichen');
               einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
               span.appendChild(einreichen);
             }
@@ -788,17 +817,22 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               missing = 0;
             }
             if (isCurrentWeek) {
-              span.className = 'inno-blue';
+              span.className = 'inno-yellow';
             } else {
-              if (missing > -8) {
-                span.className = 'inno-orange';
-              } else {
+              if (isTooOld) {
                 span.className = 'inno-red';
+              } else {
+                if (missing > -8) {
+                  span.className = 'inno-yellow';
+                } else {
+                  span.className = 'inno-orange';
+                }
               }
             }
             const lastUpdate = new Date(approvalStatus.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
             span.title = (isCurrentWeek ? 'Current week\n' : '') +
+              (isTooOld ? 'Do it now‼️\n':'') +
               `${missing} hours\n` +
               `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
             node.appendChild(span);
@@ -820,6 +854,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Check if approver has been set.
+   * 
    * @returns {boolean} approver has been set.
    */
   function hasApprover() {
@@ -829,6 +864,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Get approver value.
+   * 
    * @returns {string} tempo time sheet approver.
    */
   function getApprover() {
@@ -837,6 +873,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Sets the approver value.
+   * 
    * @param {string} approver tempo time sheet approver.
    */
   function setApprover(approver) {
@@ -845,6 +882,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Submits a period for approval.
+   * 
    * @param {TempoPeriod} period to submit for approval.
    * @param {string} actionUrl action to use for approval request.
    */
@@ -890,6 +928,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets available "periods" from tempo api.
+   * 
    * @param {Date} now current Date (for easeier access).
    * @param {boolean} forceUpdate forces update (ignore cache).
    * @param {string} withToken forces http request with this token, ignores cache.
@@ -946,6 +985,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets approval status of one period.
+   * 
    * @param {TempoPeriod} period current period.
    * @param {boolean} forceUpdate force update (ignore cache).
    * @returns {Promise<CachedTempoApproval>} approval status of period.
@@ -998,6 +1038,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets all approval statuses from storage.
+   * 
    * @returns {object} all approvals from TamperMonkey storage.
    */
   function getApprovalStatusAll() {
@@ -1006,6 +1047,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores the approval data.
+   * 
    * @param {string} key for storage.
    * @param {CachedTempoApproval} approval data.
    */
@@ -1017,6 +1059,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Removes old data from the "tempoApprovals" local storage object.
+   * 
    * @param {Array<string>} periodsSeen periods that have been iterated through.
    */
   function cleanupApprovalStatus(periodsSeen) {
@@ -1059,6 +1102,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * checks if click originated from target to avoid closing dialog on click in children and closes config dialog.
+   * 
    * @param {Event} e click event.
    */
   function closeInnoExtensionConfigCheckTarget(e) {
@@ -1076,6 +1120,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Toggles class name on node.
+   * 
    * @param {Element} node to toggle class
    * @param {string} className to add or remove
    * @param {boolean|undefined} addCond condition to add/remove class
@@ -1095,6 +1140,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Shows the configuration dialog.
+   * 
    * @param {Event} e click event.
    * @returns {boolean} false (to avoid following the link).
    */
@@ -1209,6 +1255,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   /**
    * Adds extension configuration button to profile menu in jira.
    * Bonus: Gets and stores the current user's id for Tempo queries.
+   * 
    * @param {Element} node container to add configuration button.
    */
   function addInnoExtensionConfigMenuItem(node) {
@@ -1240,6 +1287,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   /**
    * A utility function for Greasemonkey scripts, to detect and handle AJAXed content.
    * Forked for use without JQuery.
+   * 
    * @param {string} selectorTxt jQuery selector that specifies the desired element(s).
    * @param {Function} actionFunction code to run when elements are found. It is passed as node to the matched element.
    * @param {boolean} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
