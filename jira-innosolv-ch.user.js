@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.8
+// @version     2.0.9
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
-// @icon        https://github.com/mauruskuehne/jira-extensions/raw/master/icon/jira-extensions.png
+// @icon        data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none'%3E%3Cpath fill='%23224f9b' d='M9.7 23.68V5L14.3.32v23.36H9.7'/%3E%3Cpath fill='currentColor' fill-rule='evenodd' d='M15.44 13.36h4.58v4.59h-4.58zm1.15 1.15h2.29v2.29h-2.3z' clip-rule='evenodd'/%3E%3Cpath fill='currentColor' fill-rule='evenodd' d='M17.73 23.68v-4.59H14.3v-3.44H9.71v8.03zm-4.58-6.88h-2.3v2.3h2.3zm-2.3 5.73v-2.3h2.3v2.3zm3.44 0v-2.3h2.3v2.3z' clip-rule='evenodd'/%3E%3C/svg%3E
 // @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
 // @description Additional buttons for jira
 // @match       https://innosolv.atlassian.net/*
