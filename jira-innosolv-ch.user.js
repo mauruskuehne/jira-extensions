@@ -4,7 +4,7 @@
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
-// @icon        data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none'%3E%3Cpath fill='%23224f9b' d='M9.7 23.68V5L14.3.32v23.36H9.7'/%3E%3Cpath fill='currentColor' fill-rule='evenodd' d='M15.44 13.36h4.58v4.59h-4.58zm1.15 1.15h2.29v2.29h-2.3z' clip-rule='evenodd'/%3E%3Cpath fill='currentColor' fill-rule='evenodd' d='M17.73 23.68v-4.59H14.3v-3.44H9.71v8.03zm-4.58-6.88h-2.3v2.3h2.3zm-2.3 5.73v-2.3h2.3v2.3zm3.44 0v-2.3h2.3v2.3z' clip-rule='evenodd'/%3E%3C/svg%3E
+// @icon        data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath fill='%23fff' d='M0 0h48v48H0z'/%3E%3Cpath fill='none' d='M0 0h48v48H0z'/%3E%3Cpath fill='%23224f9b' d='M19.88 44.926V11.46l8.24-8.385v41.852h-8.24'/%3E%3Cpath d='M40.16 31.505h-1.422v-3.79a1.895 1.895 0 0 0-1.896-1.896h-3.79v-1.422a2.37 2.37 0 0 0-4.74 0v1.422h-3.79a1.887 1.887 0 0 0-1.887 1.895l-.004 3.602h1.417a2.56 2.56 0 0 1 2.558 2.559 2.56 2.56 0 0 1-2.558 2.559H22.63l-.005 3.601c0 1.047.848 1.895 1.895 1.895h3.602V40.51a2.56 2.56 0 0 1 2.559-2.56 2.56 2.56 0 0 1 2.559 2.56v1.421h3.601a1.895 1.895 0 0 0 1.896-1.895v-3.791h1.421a2.37 2.37 0 0 0 0-4.739z'/%3E%3C/svg%3E
 // @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
 // @description Additional buttons for jira
 // @match       https://innosolv.atlassian.net/*
