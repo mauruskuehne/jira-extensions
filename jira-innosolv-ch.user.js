@@ -266,6 +266,27 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       this.type = type;
     }
   }
+
+  class ButtonDefinition {
+    /**
+     * @class ButtonDefinition
+     * @param {string} text display text of the button.
+     * @param {string} title title of the button.
+     * @param {string} format copy format of the button, including replacement variables {0}-{2}.
+     * @param {string} icon icon of the button. This overrides the "text" property.
+     */
+    constructor(text, title, format, icon) {
+      /** @type {string} */
+      this.text = text;
+      /** @type {string} */
+      this.title = title;
+      /** @type {string} */
+      this.format = format;
+      /** @type {string} */
+      this.icon = icon;
+    }
+  }
+
   /**
    * Momentarily changes button background to green/red, to inform the user of the result of the process.
    * @param {Event} e click event
@@ -439,16 +460,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     const targBtn = searchParentOfType(targ, 'BUTTON');
     const editDialog = document.getElementById(extConfigDialogEditButtonId);
     if (!editDialog) {
-      console.error('jira-innosolv-extensions: edit dialog is not open, ignoring PREVIEW click.');
+      GM_log('jira-innosolv-extensions: edit dialog is not open, ignoring PREVIEW click.');
     }
     // clear 'editing' class from all buttons, add class to currently clicked button
     if (targBtn.hasAttribute('data-buttondef')) {
       setClassAndRemoveFromSiblings(targBtn, 'editing');
     }
-    if (targBtn.hasAttribute('data-editable') &&
-      targBtn.getAttribute('data-editable') === 'true' &&
-      targBtn.hasAttribute('data-buttondef')
-    ) {
+    if (targBtn.hasAttribute('data-buttondef')) {
       const buttonDef = JSON.parse(targBtn.getAttribute('data-buttondef'));
 
       makeButtonEditForm(editDialog, buttonDef, undefined, targBtn.id);
@@ -456,7 +474,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       makeButtonEditForm(
         editDialog,
         undefined,
-        'Button ist nicht bearbeitbar oder besitzt keine Definition. (Erster Button kann nicht geändert werden!)',
+        'Button ist nicht bearbeitbar oder besitzt keine Definition.',
         targBtn.id);
     }
   }
@@ -574,49 +592,92 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Returns the currently stored button definitions or default definitions.
+   * Checks migration status and migrates old button definitions (extraButtons) to new format.
+   * @returns {Promise<ButtonDefinition[]>} button definitions.
+   */
+  function getButtonDefinitions() {
+    return new Promise((resolve, reject) => {
+      try {
+        // check migration state
+        if (GM_getValue(persistKeyButtonDefVersion, 1) < 2) {
+          const extraButtons = GM_getValue(persistKeyExtraButtons, defaultExtraButtons);
+          let mustMigrate = false;
+          if (extraButtons.length !== defaultExtraButtons.length) {
+            mustMigrate = true;
+          } else {
+            for (let i = 0; i < extraButtons.length; i++) {
+              const b1 = extraButtons[i];
+              const b2 = defaultExtraButtons[i];
+              if (b1.text !== b2.text || b1.title !== b2.title || b1.format !== b2.format || b1.icon !== b2.icon) {
+                mustMigrate = true;
+              }
+            }
+          }
+          const newButtonsDef = [defaultButton, ...extraButtons];
+          if (mustMigrate) {
+            GM_setValue(persistKeyButtonDef, newButtonsDef);
+          }
+          GM_setValue(persistKeyButtonDefVersion, 2);
+          resolve(newButtonsDef);
+        } else {
+          // already migrated, get button definitions.
+          const buttonDefs = GM_getValue(persistKeyButtonDef, [defaultButton, ...defaultExtraButtons]);
+          /** @type {ButtonDefinition[]} */
+          const ret = [];
+          buttonDefs.forEach((e) => {
+            ret.push(new ButtonDefinition(e.text, e.title, e.format, e.icon));
+          });
+          resolve(ret);
+        }
+      } catch (ex) {
+        reject(ex);
+      }
+    });
+  }
+
+  /**
+   * Creates extension button for custom "copy" commands.
+   * @param {ButtonDefinition} buttondef button definition.
+   * @param {boolean} preview create preview of button.
+   * @returns {Element} button node.
+   */
+  function createButton(buttondef, preview) {
+    const btn = createNode('button', 'inno-btn', undefined, undefined, buttondef.title);
+    btn.setAttribute('data-format', buttondef.format);
+    const lbl = createNode('span');
+    if (buttondef.icon) {
+      lbl.innerHTML = buttondef.icon;
+    } else {
+      lbl.innerText = buttondef.text;
+    }
+    btn.appendChild(lbl);
+    if (preview) {
+      btn.setAttribute('data-buttondef', JSON.stringify(buttondef));
+      btn.onclick = buttonClickedPreview; // onclick function for preview window
+    } else {
+      btn.onclick = buttonClicked; // onclick function
+    }
+    return btn;
+  }
+
+  /**
    * Adds configured copy buttons and styling to node.
    * @param {Element} node container to add the buttons to.
    * @param {boolean} preview preparation for configuration dialog
    */
-  function addCopyButtons(node, preview = false) {
+  async function addCopyButtons(node, preview = false) {
     if (isIgnoredPath()) {
       return;
     }
 
-    const commitButtonId = preview ? 'commit-header-btn' : 'commit-header-btn-preview';
-    if (!document.getElementById(commitButtonId)) {
+    const buttonsId = preview ? innoButtonPreviewId : innoButtonId;
+    if (!document.getElementById(buttonsId)) {
       node.appendChild(createNode('style', undefined, copyButtonStyles));
-
-      const createBtn = function (id, buttondef) {
-        const btn = createNode('button', 'inno-btn', undefined, id, buttondef.title);
-        btn.setAttribute('data-format', buttondef.format);
-        const lbl = createNode('span');
-        if (buttondef.icon) {
-          lbl.innerHTML = buttondef.icon;
-        } else {
-          lbl.innerText = buttondef.text;
-        }
-        btn.appendChild(lbl);
-        if (preview) {
-          btn.setAttribute('data-buttondef', JSON.stringify(buttondef));
-          btn.setAttribute('data-editable', id !== commitButtonId);
-          btn.onclick = buttonClickedPreview; // onclick function for preview window
-        } else {
-          btn.onclick = buttonClicked; // onclick function
-        }
-        return btn;
-      };
-
-      const container = createNode('div', 'inno-btn-container');
-      // create main button
-      container.appendChild(
-        createBtn(commitButtonId, defaultButton)
-      );
-
-      // create additional buttons
-      const extraButtons = GM_getValue('extraButtons', defaultExtraButtons);
-      extraButtons.forEach(function (btn, i) {
-        container.appendChild(createBtn(commitButtonId + '-' + i, btn));
+      const container = createNode('div', 'inno-btn-container', undefined, buttonsId);
+      const buttons = await getButtonDefinitions();
+      buttons.forEach((btn) => {
+        container.appendChild(createButton(btn, preview));
       });
       node.appendChild(container);
     }
