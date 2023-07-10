@@ -41,7 +41,7 @@ module.exports = {
       'error', {
         'code': 120,
         'tabWidth': 2,
-        'ignorePattern': '^.*<svg.*$'
+        'ignorePattern': '^.*(<svg|data:image/svg[+]xml).*$'
       }
     ]
   },

@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.8
+// @version     2.0.9
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
-// @icon        https://github.com/mauruskuehne/jira-extensions/raw/master/icon/jira-extensions.png
+// @icon        data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath fill='%23fff' d='M0 0h48v48H0z' style='fill:%23224f9b;fill-opacity:1'/%3E%3Cpath fill='none' d='M0 0h48v48H0z'/%3E%3Cpath fill='%23224f9b' d='M19.88 44.926V11.46l8.24-8.385v41.852h-8.24' style='fill:%23fff;fill-opacity:1'/%3E%3Cpath d='M4.463 35.31H5.56v-2.922a1.461 1.461 0 0 1 1.462-1.462h2.922v-1.097a1.828 1.828 0 0 1 3.656 0v1.097h2.922a1.455 1.455 0 0 1 1.455 1.461l.003 2.778h-1.092a1.974 1.974 0 0 0-1.973 1.973 1.974 1.974 0 0 0 1.973 1.973h1.093l.004 2.777a1.46 1.46 0 0 1-1.461 1.462h-2.778v-1.095a1.974 1.974 0 0 0-1.973-1.975 1.974 1.974 0 0 0-1.974 1.975v1.095H7.022a1.461 1.461 0 0 1-1.462-1.46v-2.924H4.465a1.828 1.828 0 0 1 0-3.655z' style='fill:none;stroke:%23000;stroke-width:.770397;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1'/%3E%3C/svg%3E
 // @author      Daniel Dähler, Maurus Kühne, Gottfried Mayer
 // @description Additional buttons for jira
 // @match       https://innosolv.atlassian.net/*
