@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.9
+// @version     2.0.10
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -31,18 +31,22 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
  */
 
 /* global GM_getValue, GM_setValue, GM_log, GM_xmlhttpRequest */
-(function () {
+(() => {
   'use strict';
 
   // tempo cloud API base URL.
-  const tempoBaseUrl = 'https://api.tempo.io/core/3/';
+  const tempoBaseUrl = 'https://api.tempo.io/4/';
   // tempo frontend link.
   const tempoLink = 'https://innosolv.atlassian.net/plugins/servlet/ac/io.tempo.jira/tempo-app';
   const tempoConfigLink = tempoLink + '#!/configuration/api-integration';
   // cache time periods for x days in local storage.
   const periodsCacheValidForDays = 1;
+  // cache time schedules for x days in local storage.
+  const scheduleCacheValidForDays = 2;
   // cache approval data for x hours in local storage.
   const approvalCacheValidForHours = 4;
+  // mark periods as "too old" (complete now!!) after x days.
+  const tempoMarkPeriodTooOldAfterDays = 14;
   // delay to update tempo display: jira/wiki sometimes remove/recreate the "create" button.
   const tempoUpdateDelayMs = 1500;
   // setTimeout handle to avoid firing multiple times.
@@ -58,6 +62,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const configMenuItemId = 'inno-config-lnk';
   // disable extension for these urls
   const disabledUrls = ['/wiki/', '/plugins/'];
+
+  const persistKeyJiraUser = 'jiraUserId';
+  const persistKeyTempoDisabled = 'tempoDisabled';
+  const persistKeyTempoToken = 'tempoToken';
+  const persistKeyTempoTokenAllowsSchedule = 'tempoTokenAllowsSchedule';
+  const persistKeyTempoApprover = 'tempoApprover';
+  const persistKeyTempoPeriods = 'tempoPeriods';
+  const persistKeyTempoSchedule = 'tempoSchedule';
+  const persistKeyTempoApprovals = 'tempoApprovals';
+  const persistKeyExtraButtons = 'extraButtons';
+  const persistKeyButtonDef = 'buttonsDefinition';
+  const persistKeyButtonDefVersion = 'buttonsDefinitionVersion';
+
+  const innoButtonId = 'innoJiraButtons';
+  const innoButtonPreviewId = 'innoJiraButtonsPreview';
 
   /*
   svg icons source:
@@ -165,8 +184,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const configHelpText1 = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
     'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen ' +
     '(und verwalten, falls "Periode einreichen" möglich sein soll) /\n' +
-    'Bereich für Zeiträume: Zeiträume anzeigen /\nBereich der Zeitnachweise: Zeitnachweise anzeigen\'\n' +
+    'Bereich für Zeiträume: Zeiträume anzeigen /\nBereich der Schemata: Schemata anzeigen /\n' +
+    'Bereich der Zeitnachweise: Zeitnachweise anzeigen\'\n' +
     '➡ Bestätigen \n➡ Kopieren';
+
+  const couldNotReadUserScheduleText = 'tempo token does not allow reading users schedule information!' +
+    ' -- create new tempo token including schema => "read" access rights and save it in the extensions config dialog.';
 
   // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
   // The main button (git commit message) cannot be changed or removed.
@@ -227,6 +250,22 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
+  class TempoSchedule {
+    /**
+     * @class TempoSchedule
+     * @param {string} date date string
+     * @param {number} requiredSeconds required time in seconds
+     * @param {string} type schedule type
+     */
+    constructor(date, requiredSeconds, type) {
+      /** @type {string} */
+      this.date = date;
+      /** @type {number} */
+      this.requiredSeconds = requiredSeconds;
+      /** @type {string} */
+      this.type = type;
+    }
+  }
   /**
    * Momentarily changes button background to green/red, to inform the user of the result of the process.
    * @param {Event} e click event
@@ -362,10 +401,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       }
       // copy text to clipboard
       navigator.clipboard.writeText(txt).then(
-        function () {
+        () => {
           flashCopiedMessage.bind(targBtn)(e, true);
         },
-        function () {
+        () => {
           flashCopiedMessage.bind(targBtn)(e, false);
         }
       );
@@ -661,7 +700,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {boolean} tempo integration is disabled.
    */
   function isTempoDisabled() {
-    return GM_getValue('tempoDisabled', false) == true;
+    return GM_getValue(persistKeyTempoDisabled, false) == true;
   }
 
   /**
@@ -669,7 +708,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} disabled state.
    */
   function setTempoDisabled(disabled) {
-    GM_setValue('tempoDisabled', disabled);
+    GM_setValue(persistKeyTempoDisabled, disabled);
   }
 
   /**
@@ -677,13 +716,29 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string} token to access tempo api.
    */
   function setTempoToken(token) {
-    GM_setValue('tempoToken', token);
+    GM_setValue(persistKeyTempoToken, token);
+  }
+
+  /**
+   * Checks if tempo token allows getting the user's schedule information
+   * @returns {boolean} tempo token allows requesting user's schedule information
+   */
+  function getTempoTokenAllowsSchedule() {
+    return GM_getValue(persistKeyTempoTokenAllowsSchedule, true) == true;
+  }
+
+  /**
+   * Stores, wether the tempo token allowed accessing the user's schedule information
+   * @param {boolean} isAllowed user's schedule was retrieved successfully
+   */
+  function setTempoTokenAllowsSchedule(isAllowed) {
+    GM_setValue(persistKeyTempoTokenAllowsSchedule, isAllowed);
   }
 
   /**
    * Checks, if the provided token can access the tempo api, stores the token on success.
    * @param {string} token to check and store if request was successful.
-   * @returns {Promise<boolean>} success state.
+   * @returns {Promise<boolean|string>} success state. If string is returned, it contains the "yes, but" reason.
    */
   function checkAndStoreTempoToken(token) {
     // eslint-disable-next-line no-async-promise-executor
@@ -693,9 +748,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         const periods = await getTempoPeriods(now, true, token);
         if (periods) {
           setTempoToken(token);
+          try {
+            if (!getTempoTokenAllowsSchedule()) {
+              setTempoTokenAllowsSchedule(true);
+            }
+            const schedule = await getSchedule(periods[periods.length - 1], true, now, token);
+            if (schedule) {
+              resolve(true);
+            }
+          }
+          catch (ex) {
+            resolve(ex);
+          }
           resolve(true);
         } else {
-          reject();
+          reject('The webservice returned no periods. Check "jiraUserId" in Tampermonkey under "storage"!');
         }
       }
       catch (e) {
@@ -709,8 +776,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {boolean} Configuration is complete.
    */
   function isTempoConfigured() {
-    if (GM_getValue('jiraUserId', '') !== '') {
-      if (GM_getValue('tempoToken', '') !== '') {
+    if (GM_getValue(persistKeyJiraUser, '') !== '') {
+      if (GM_getValue(persistKeyTempoToken, '') !== '') {
         return true;
       }
     }
@@ -724,6 +791,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function getYMD(date) {
     return `${date.getFullYear()}-${lZero(date.getMonth() + 1)}-${lZero(date.getDate())}`;
+  }
+
+  /**
+   * Get Date object from date string.
+   * @param {string} date date string in format of "yyyy-MM-dd".
+   * @returns {Date} date object.
+   */
+  function getDateFromString(date) {
+    return new Date(date.slice(0, 4), Number(date.slice(-5).slice(0, 2)) - 1, date.slice(-2));
   }
 
   /**
@@ -757,8 +833,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         return;
       }
 
+      /** @type {TempoPeriod|null} */
+      let nowPeriod = null;
       if (now.getDay() == 1 || now.getDay() == 2) { // Mon/Tue => ignore last (current) period.
         periods.pop();
+      } else {
+        nowPeriod = periods[periods.length - 1];
       }
       const displayPeriods = periods.slice(-4);
       // Tempo app link
@@ -770,13 +850,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       try {
         for (const p of displayPeriods) {
           periodsSeen.push(p.fromKey());
-          const approvalStatus = await getApprovalStatus(p, forceUpdate);
+          const approvalStatus = await getApprovalStatus(p, forceUpdate, now);
           if (approvalStatus.statusKey == 'OPEN') {
-            const toDate = new Date(p.to.slice(0, 4), Number(p.to.slice(-5).slice(0, 2)) - 1, p.to.slice(-2));
-            const isCurrentWeek = new Date() < toDate;
-            const fromDate = new Date(p.from.slice(0, 4), Number(p.from.slice(-5).slice(0, 2)) - 1, p.from.slice(-2));
-            // start of period was more than 2 weeks ago - and thus should be closed immediately.
-            const isTooOld = fromDate < new Date(Date.now() - (14 * 24 * 60 * 60 * 1000));
+            const fromDate = getDateFromString(p.from);
+            const toDate = getDateFromString(p.to);
+            const isCurrentWeek = now < toDate;
+            // start of period was more than x days ago - and thus should be completed immediately.
+            const tooOldDate = new Date();
+            tooOldDate.setDate(tooOldDate.getDate() - tempoMarkPeriodTooOldAfterDays);
+            const isTooOld = fromDate < tooOldDate;
+            const useSchedule = nowPeriod !== null && nowPeriod == p;
+            const required = await getRequiredTime(approvalStatus.required, useSchedule, nowPeriod, forceUpdate, now);
             const span = createNode('span');
             span.appendChild(
               document.createTextNode(`${isTooOld ? '❌ ' : ''}${toDate.getDate()}.${toDate.getMonth() + 1}.`)
@@ -788,23 +872,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
               span.appendChild(einreichen);
             }
-            let missing = -(((approvalStatus.required - approvalStatus.logged) / 60 / 60).toFixed(2));
-            if (missing > 0) {
-              missing = 0;
-            }
-            if (isCurrentWeek) {
-              span.className = 'inno-yellow';
-            } else {
-              if (isTooOld) {
-                span.className = 'inno-red';
-              } else {
-                if (missing > -8) {
-                  span.className = 'inno-yellow';
-                } else {
-                  span.className = 'inno-orange';
-                }
-              }
-            }
+            let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
+            span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
             const lastUpdate = new Date(approvalStatus.cache);
             lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
             span.title = (isCurrentWeek ? 'Current week\n' : '') +
@@ -819,12 +888,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         refresh.onclick = () => { getTempoData(node, true); };
         node.appendChild(refresh);
       } catch (e) {
-        console.error(e);
+        GM_log(`getTempoData: Exception ${e}`);
         return;
       }
       cleanupApprovalStatus(periodsSeen);
     } catch (e) {
-      console.error(e);
+      GM_log(`getTempoData: Exception ${e}`);
     }
   }
 
@@ -833,7 +902,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {boolean} approver has been set.
    */
   function hasApprover() {
-    const ret = GM_getValue('tempoApprover', '');
+    const ret = GM_getValue(persistKeyTempoApprover, '');
     return !!ret;
   }
 
@@ -842,7 +911,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {string} tempo time sheet approver.
    */
   function getApprover() {
-    return GM_getValue('tempoApprover', '');
+    return GM_getValue(persistKeyTempoApprover, '');
   }
 
   /**
@@ -850,7 +919,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string} approver tempo time sheet approver.
    */
   function setApprover(approver) {
-    GM_setValue('tempoApprover', approver);
+    GM_setValue(persistKeyTempoApprover, approver);
   }
 
   /**
@@ -868,7 +937,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${GM_getValue('tempoToken', '')}`
+            'Authorization': `Bearer ${GM_getValue(persistKeyTempoToken, '')}`
           },
           responseType: 'json',
           onload: (resp) => {
@@ -899,6 +968,24 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Returns the default properties object for a XMLHttp "GET" request.
+   * @param {string} relativeUrl relative request url.
+   * @param {string|undefined} withToken use a specific token (optional).
+   * @returns {object} default properties for XMLHttp Request.
+   */
+  function getPropsForGetRequest(relativeUrl, withToken) {
+    return {
+      method: 'GET',
+      url: tempoBaseUrl + relativeUrl,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${(withToken ? withToken : GM_getValue(persistKeyTempoToken, ''))}`
+      },
+      responseType: 'json'
+    };
+  }
+
+  /**
    * Gets available "periods" from tempo api.
    * @param {Date} now current Date (for easeier access).
    * @param {boolean} forceUpdate forces update (ignore cache).
@@ -907,7 +994,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function getTempoPeriods(now, forceUpdate, withToken) {
     return new Promise((resolve, reject) => {
-      const cachedPeriods = GM_getValue('tempoPeriods', { cache: getYMD(now), periods: [] });
+      const cachedPeriods = GM_getValue(persistKeyTempoPeriods, { cache: getYMD(now), periods: [] });
       const cachedDate = new Date(cachedPeriods.cache);
       if (cachedDate > now && !withToken && !forceUpdate) {
         /** @type {TempoPeriod[]} */
@@ -924,13 +1011,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         const pastParam = getYMD(oneMonthAgo);
         const nowParam = getYMD(now);
         GM_xmlhttpRequest({
-          method: 'GET',
-          url: tempoBaseUrl + `periods?from=${pastParam}&to=${nowParam}`,
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${(withToken ? withToken : GM_getValue('tempoToken', ''))}`
-          },
-          responseType: 'json',
+          ...getPropsForGetRequest(`periods?from=${pastParam}&to=${nowParam}`, withToken),
           onload: (resp) => {
             if (resp.status == 200) {
               const cacheExp = new Date();
@@ -941,7 +1022,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                 const period = resp.response.periods[i];
                 periods.push(new TempoPeriod(period.from, period.to));
               }
-              GM_setValue('tempoPeriods', { cache: getYMD(cacheExp), periods: periods });
+              GM_setValue(persistKeyTempoPeriods, { cache: getYMD(cacheExp), periods: periods });
               resolve(periods);
             } else {
               GM_log(`innoTempo: error fetching periods.
@@ -955,32 +1036,138 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Returns css class name for period, according to status.
+   * @param {boolean} isCurrentWeek period is the current week.
+   * @param {boolean} isTooOld period is too old.
+   * @param {boolean} missingLessThanADay period is missing less than a day's time.
+   * @returns {string} css class name for display.
+   */
+  function getClassForPeriod(isCurrentWeek, isTooOld, missingLessThanADay) {
+    if (isCurrentWeek) {
+      return 'inno-yellow';
+    } else {
+      if (isTooOld) {
+        return 'inno-red';
+      } else {
+        if (missingLessThanADay) {
+          return 'inno-yellow';
+        } else {
+          return 'inno-orange';
+        }
+      }
+    }
+  }
+
+  /**
+   * Gets Workload (required time per day) for current user.
+   * @param {TempoPeriod} period current period.
+   * @param {boolean} forceUpdate ignore cache, force update.
+   * @param {Date} now now Date, for easy access.
+   * @param {string|undefined} token use this token for request.
+   * @returns {Promise<TempoSchedule[]>} tempo schedule for user.
+   */
+  function getSchedule(period, forceUpdate, now, token) {
+    return new Promise((resolve, reject) => {
+      if (!getTempoTokenAllowsSchedule() && !forceUpdate) {
+        reject(couldNotReadUserScheduleText);
+      }
+      const cachedSchedule = GM_getValue(persistKeyTempoSchedule, { cache: getYMD(now), schedule: [] });
+      const cachedDate = new Date(cachedSchedule.cache);
+      if (cachedDate > now && !forceUpdate) {
+        /** @type {TempoSchedule[]} */
+        const schedule = [];
+        for (let i = 0; i < cachedSchedule.schedule.length; i++) {
+          const sched = cachedSchedule.schedule[i];
+          schedule.push(new TempoSchedule(sched.date, sched.requiredSeconds, sched.type));
+        }
+        resolve(schedule);
+        return;
+      } else {
+        GM_xmlhttpRequest({
+          ...getPropsForGetRequest(`user-schedule?from=${period.from}&to=${period.to}`, token),
+          onload: (resp) => {
+            if (resp.status == 200) {
+              if (resp.response.results && resp.response.results.length > 0) {
+                const cacheExp = new Date();
+                cacheExp.setDate(cacheExp.getDate() + scheduleCacheValidForDays);
+                /** @type {TempoSchedule[]} */
+                const schedule = [];
+                for (let i = 0; i < resp.response.results.length; i++) {
+                  const sched = resp.response.results[i];
+                  schedule.push(new TempoSchedule(sched.date, sched.requiredSeconds, sched.type));
+                }
+                GM_setValue(persistKeyTempoSchedule, { cache: getYMD(cacheExp), schedule: schedule });
+                resolve(schedule);
+                return;
+              }
+            } else if (resp.status == 403) {
+              if (getTempoTokenAllowsSchedule()) {
+                setTempoTokenAllowsSchedule(false);
+                reject(couldNotReadUserScheduleText);
+              }
+            }
+            reject(resp);
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Returns the number of required seconds for the current period.
+   * If useScheduleTime is false, the requiredFromApproval is always returned.
+   * If useScheduleTime is true, the time is calculated from the user's schedule.
+   * @param {number} requiredFromApproval required time from approvalStatus.
+   * @param {boolean} useScheduleTime use schedule to get required seconds until today.
+   * @param {TempoPeriod} period current period.
+   * @param {boolean} forceUpdate force update, ignore cache.
+   * @param {Date} now now Date for easy access.
+   * @returns {Promise<number>} required seconds for period.
+   */
+  async function getRequiredTime(requiredFromApproval, useScheduleTime, period, forceUpdate, now) {
+    if (useScheduleTime) {
+      try {
+        let requiredSeconds = 0;
+        const schedule = await getSchedule(period, forceUpdate, now);
+        schedule.forEach((v) => {
+          const schedDate = getDateFromString(v.date);
+          if (schedDate <= now) {
+            requiredSeconds += v.requiredSeconds;
+          }
+        });
+        return requiredSeconds;
+      } catch (e) {
+        GM_log(`getRequiredTime: Exception ${e}`);
+        return requiredFromApproval;
+      }
+    } else {
+      return requiredFromApproval;
+    }
+  }
+
+  /**
    * Gets approval status of one period.
    * @param {TempoPeriod} period current period.
    * @param {boolean} forceUpdate force update (ignore cache).
+   * @param {Date} now current Date for easier access.
    * @returns {Promise<CachedTempoApproval>} approval status of period.
    */
-  function getApprovalStatus(period, forceUpdate) {
+  function getApprovalStatus(period, forceUpdate, now) {
     return new Promise((resolve, reject) => {
       const approvals = getApprovalStatusAll();
       const fromKey = period.fromKey();
       if (approvals[fromKey]) {
         const approval = approvals[fromKey];
         const cachedDate = new Date(approval.cache);
-        if (cachedDate > new Date() && !forceUpdate) {
+        if (cachedDate > now && !forceUpdate) {
           resolve(approval);
           return;
         }
       }
       GM_xmlhttpRequest({
-        method: 'GET',
-        url: tempoBaseUrl + `timesheet-approvals/user/${GM_getValue('jiraUserId', '')}` +
-          `?from=${period.from}&to=${period.to}`,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${GM_getValue('tempoToken', '')}`
-        },
-        responseType: 'json',
+        ...getPropsForGetRequest(
+          `timesheet-approvals/user/${GM_getValue(persistKeyJiraUser, '')}?from=${period.from}&to=${period.to}`
+        ),
         onload: (resp) => {
           if (resp.status == 200) {
             const cacheExp = new Date();
@@ -1011,7 +1198,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {object} all approvals from TamperMonkey storage.
    */
   function getApprovalStatusAll() {
-    return GM_getValue('tempoApprovals', {});
+    return GM_getValue(persistKeyTempoApprovals, {});
   }
 
   /**
@@ -1022,7 +1209,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function saveApprovalStatus(key, approval) {
     const approvals = getApprovalStatusAll();
     approvals[key] = approval;
-    GM_setValue('tempoApprovals', approvals);
+    GM_setValue(persistKeyTempoApprovals, approvals);
   }
 
   /**
@@ -1039,7 +1226,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       }
     });
     if (changed) {
-      GM_setValue('tempoApprovals', approvals);
+      GM_setValue(persistKeyTempoApprovals, approvals);
     }
   }
 
@@ -1048,23 +1235,30 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    */
   function saveAndCloseInnoExtensionConfigDialog() {
     let hasChanges = false;
-    const currentDisabled = isTempoDisabled();
-    const settingDisabled = !document.getElementById('tempoIntegrationEnabled').checked;
-    if (currentDisabled !== settingDisabled) {
-      hasChanges = true;
-      setTempoDisabled(settingDisabled);
-    }
-    const currentApprover = getApprover();
-    const settingApprover = document.getElementById(extConfigDialogTempoApproverId).value;
-    if (currentApprover !== settingApprover) {
-      hasChanges = true;
-      setApprover(settingApprover);
-    }
+    const integrationEnabledElement = document.getElementById('tempoIntegrationEnabled');
+    const settingApproverElement = document.getElementById(extConfigDialogTempoApproverId);
+    if (integrationEnabledElement && settingApproverElement) {
+      const currentDisabled = isTempoDisabled();
+      const settingDisabled = !integrationEnabledElement.checked;
+      if (currentDisabled !== settingDisabled) {
+        hasChanges = true;
+        setTempoDisabled(settingDisabled);
+      }
+      const currentApprover = getApprover();
+      const settingApprover = settingApproverElement.value;
+      if (currentApprover !== settingApprover) {
+        hasChanges = true;
+        setApprover(settingApprover);
+      }
 
-    if (hasChanges) {
-      window.alert('you need to reload the current page for changes to take effect.');
+      if (hasChanges) {
+        window.alert('you need to reload the current page for changes to take effect.');
+      }
+      closeInnoExtensionConfigDialog();
+    } else {
+      // dialog no longer exists, bail out.
+      return;
     }
-    closeInnoExtensionConfigDialog();
   }
 
   /**
@@ -1081,7 +1275,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Closes the configuration dialog.
    */
   function closeInnoExtensionConfigDialog() {
-    document.getElementById(extConfigDialogId).remove();
+    const dlg = document.getElementById(extConfigDialogId);
+    if (dlg) {
+      dlg.remove();
+    }
   }
 
   /**
@@ -1125,7 +1322,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       if (!tempoDisabled) {
         enabledInput.setAttribute('checked', 'checked');
       }
-      enabledInput.onchange = function (e) {
+      enabledInput.onchange = (e) => {
         const isChecked = e.target.checked;
         const grp = document.getElementById(extConfigDialogTempoDetailsId);
         toggleClass(grp, 'inno-hidden', !isChecked);
@@ -1145,7 +1342,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       tempoGroup.appendChild(lbl);
       const inp = createNode('input', undefined, undefined, 'tempoTokenInput');
       inp.type = 'text';
-      inp.value = GM_getValue('tempoToken', '');
+      inp.value = GM_getValue(persistKeyTempoToken, '');
       inp.placeholder = 'tempo token';
       tempoGroup.appendChild(inp);
       const a = createNode('a', undefined, 'open tempo configuration dialog in new tab');
@@ -1172,20 +1369,31 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       tempoGroup.appendChild(approverInp);
       const btnRow = createNode('div', 'buttonrow');
       const btn = createNode('button', 'inno-savebtn', 'check and save tempo data');
-      btn.onclick = async function () {
+      btn.onclick = async () => {
         try {
           const inp = document.getElementById('tempoTokenInput');
-          if (inp.classList.contains('is-invalid')) {
+          if (inp && inp.classList) {
             inp.classList.remove('is-invalid');
-          }
-          const success = await checkAndStoreTempoToken(inp.value);
-          if (success) {
-            saveAndCloseInnoExtensionConfigDialog();
+            const success = await checkAndStoreTempoToken(inp.value);
+            if (success === true) {
+              saveAndCloseInnoExtensionConfigDialog();
+            } else if (typeof success === 'string') {
+              // display warning about reading user's schedule, close after 5 seconds.
+              const parent = inp.parentNode;
+              const info = createNode('div', 'help is-invalid', success);
+              parent.appendChild(info);
+              window.setTimeout(() => {
+                parent.removeChild(info);
+                saveAndCloseInnoExtensionConfigDialog();
+              }, 5000);
+            } else {
+              inp.classList.add('is-invalid');
+            }
           } else {
-            inp.classList.add('is-invalid');
+            throw ('tempoTokenInput could not be found in DOM!');
           }
         } catch (e) {
-          console.error(e);
+          GM_log(`check and save tempo data, onClick: Exception ${e}`);
           inp.classList.add('is-invalid');
         }
       };
@@ -1230,17 +1438,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       if (!document.getElementById(configMenuItemId)) {
         const parent = node.parentNode;
         parent.appendChild(createNode('style', undefined, configMenuItemStyles));
-        const lnk = createNode('a', configMenuItemId, '⚙ Jira Extension', configMenuItemId);
+        const lnk = createNode('a', configMenuItemId, '⚙️ inno-Jira Extension', configMenuItemId);
         lnk.href = '#';
         lnk.onclick = showInnoExtensionConfigDialog;
         parent.appendChild(lnk);
       }
     } else if (headerText == 'JIRA') {
-      if (GM_getValue('jiraUserId', '') == '') {
+      if (GM_getValue(persistKeyJiraUser, '') == '') {
         const link = node.nextSibling;
         let match;
         if (link && link.href && (match = /\/jira\/people\/([0-9a-f]+)$/.exec(link.href))) {
-          GM_setValue('jiraUserId', match[1]);
+          GM_setValue(persistKeyJiraUser, match[1]);
         }
       }
     }
@@ -1260,7 +1468,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
     if (targetNodes && targetNodes.length > 0) {
       btargetsFound = true;
-      targetNodes.forEach(function (element) {
+      targetNodes.forEach((element) => {
         const alreadyFound = element.dataset.found == 'alreadyFound' ? 'alreadyFound' : false;
         if (!alreadyFound) {
           const cancelFound = actionFunction(element);
@@ -1290,7 +1498,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     else {
       //--- Set a timer, if needed.
       if (!timeControl) {
-        timeControl = setInterval(function () {
+        timeControl = setInterval(() => {
           waitForKeyElements(selectorTxt, actionFunction, bWaitOnce);
         }, 300);
         controlObj[controlKey] = timeControl;
