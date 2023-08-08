@@ -924,7 +924,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             const required = await getRequiredTime(approvalStatus.required, useSchedule, nowPeriod, forceUpdate, now);
             const span = createNode('span');
             span.appendChild(
-              document.createTextNode(`${isTooOld ? '❌ ' : ''}${toDate.getDate()}.${toDate.getMonth() + 1}.`)
+              document.createTextNode(`${isTooOld ? '❌ ' : ''}${fromDate.getDate()}.${fromDate.getMonth() + 1}.`)
             );
             span.appendChild(createNode('br'));
             span.appendChild(document.createTextNode('Open'));
