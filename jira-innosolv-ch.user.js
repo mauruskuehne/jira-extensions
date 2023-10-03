@@ -324,7 +324,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function getData() {
     const issueLink = (
       // backlog view, detail view
-      document.querySelector('[data-test-id*="current-issue"] a')
+      document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]')
       // kanban view
       || document.querySelector('.ghx-selected a')
     );
@@ -335,10 +335,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     const jiraNumber = issueLink.dataset.tooltip || issueLink.innerText;
 
     const title = (
-      // kanban view with ticket details in a modal
-      document.querySelector('[data-test-id*="summary.heading"]')
-      // kanban view
-      || document.querySelector('.ghx-selected .ghx-summary')
+      // kanban view with details in a modal, standalone view
+      document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]')
       // backlog view, detail view
       || Array.from(document.querySelectorAll('h1')).pop()
     ).innerText;
