@@ -131,21 +131,21 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
     'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;}' +
     `#${tempoId} > a{color:var(--ds-icon-accent-blue);text-decoration:none;padding:0.75em;margin:0 0.3em;` +
-    'border-radius:0.3em;background:var(--ds-background-subtleNeutral-resting);z-index:20;}' +
+    'border-radius:0.3em;background:var(--ds-background-neutral-subtle);z-index:20;}' +
     `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);text-decoration:none;` +
-    'background:var(--ds-background-subtleNeutral-hover);}' +
+    'background:var(--ds-background-neutral-subtle-hovered);}' +
     `#${tempoId} .inno-cursor {cursor:pointer;}` +
     `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
     `#${tempoId} span.inno-orange{color:var(--ds-text-accent-orange);` +
-    'background-color:var(--ds-background-accent-orange);border-color:var(--ds-border-accent-orange);}' +
+    'background-color:var(--ds-background-accent-orange-subtler);border-color:var(--ds-border-accent-orange);}' +
     `#${tempoId} span.inno-red{color:var(--ds-text-accent-red);` +
-    'background-color:var(--ds-background-accent-red);border-color:var(--ds-border-accent-red);}' +
+    'background-color:var(--ds-background-accent-red-subtler);border-color:var(--ds-border-accent-red);}' +
     `#${tempoId} span.inno-yellow{color:var(--ds-text-accent-yellow);` +
-    'background-color:var(--ds-background-accent-yellow);border-color:var(--ds-border-accent-yellow);}' +
+    'background-color:var(--ds-background-accent-yellow-subtler);border-color:var(--ds-border-accent-yellow);}' +
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
-    'background:var(--ds-background-subtleNeutral-hover);}';
+    'background:var(--ds-background-neutral-subtle-hovered);}';
   const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
     'background:var(--ds-blanket);opacity:1;font-size:12pt;';
   const configDialogStyles = '.inno-dlg{width:500px;position:relative;margin:10% auto;padding:0 20px 20px;' +
