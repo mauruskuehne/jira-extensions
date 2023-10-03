@@ -1571,7 +1571,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   // jira-extension relevant function calls
 
   // copy buttons
-  const actionSelector = 'div[data-test-id="issue.views.issue-base.foundation.status.actions-wrapper"]';
+  const actionSelector = 'div[data-testid="issue.views.issue-base.foundation.status.actions-wrapper"]';
   waitForKeyElements(actionSelector, addCopyButtons, false);
 
   // config menu for jira extension
