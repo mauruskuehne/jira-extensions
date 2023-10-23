@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.10
+// @version     2.0.11
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -38,6 +38,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const tempoBaseUrl = 'https://api.tempo.io/4/';
   // tempo frontend link.
   const tempoLink = 'https://innosolv.atlassian.net/plugins/servlet/ac/io.tempo.jira/tempo-app';
+  const tempoEditLink = tempoLink + '#!/my-work/week?type=TIME&date=';
   const tempoConfigLink = tempoLink + '#!/configuration/api-integration';
   // cache time periods for x days in local storage.
   const periodsCacheValidForDays = 1;
@@ -930,6 +931,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               const einreichen = createNode('strong', 'inno-cursor', '📨', undefined, 'Periode einreichen');
               einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
               span.appendChild(einreichen);
+            }
+            if (!isCurrentWeek) {
+              const edit = createNode('a', undefined, '✏️', undefined, 'In Tempo bearbeiten');
+              edit.href = `${tempoEditLink}${getYMD(fromDate)}`;
+              span.appendChild(edit);
             }
             let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
             span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
