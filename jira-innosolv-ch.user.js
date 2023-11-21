@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.10
+// @version     2.0.11
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -38,6 +38,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const tempoBaseUrl = 'https://api.tempo.io/4/';
   // tempo frontend link.
   const tempoLink = 'https://innosolv.atlassian.net/plugins/servlet/ac/io.tempo.jira/tempo-app';
+  const tempoEditLink = tempoLink + '#!/my-work/week?type=TIME&date=';
   const tempoConfigLink = tempoLink + '#!/configuration/api-integration';
   // cache time periods for x days in local storage.
   const periodsCacheValidForDays = 1;
@@ -130,10 +131,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const tempoStyles = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
     `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
     'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;}' +
-    `#${tempoId} > a{color:var(--ds-icon-accent-blue);text-decoration:none;padding:0.75em;margin:0 0.3em;` +
-    'border-radius:0.3em;background:var(--ds-background-neutral-subtle);z-index:20;}' +
-    `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);text-decoration:none;` +
-    'background:var(--ds-background-neutral-subtle-hovered);}' +
+    `#${tempoId} a{text-decoration:none;}#${tempoId} a:hover{text-decoration:none;}` +
+    `#${tempoId} > a{color:var(--ds-icon-accent-blue);padding:0.75em;margin:0 0.3em;` +
+    'border-radius:0.3em;background:var(--ds-background-neutral);z-index:20;}' +
+    `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);background:var(--ds-background-neutral-hovered);}` +
     `#${tempoId} .inno-cursor {cursor:pointer;}` +
     `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
     `#${tempoId} span.inno-orange{color:var(--ds-text-accent-orange);` +
@@ -145,7 +146,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
-    'background:var(--ds-background-neutral-subtle-hovered);}';
+    'background:var(--ds-background-neutral-hovered);}';
   const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
     'background:var(--ds-blanket);opacity:1;font-size:12pt;';
   const configDialogStyles = '.inno-dlg{width:500px;position:relative;margin:10% auto;padding:0 20px 20px;' +
@@ -930,6 +931,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               const einreichen = createNode('strong', 'inno-cursor', '📨', undefined, 'Periode einreichen');
               einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
               span.appendChild(einreichen);
+            }
+            if (!isCurrentWeek) {
+              const edit = createNode('a', undefined, '✏️', undefined, 'In Tempo bearbeiten');
+              edit.href = `${tempoEditLink}${getYMD(fromDate)}`;
+              span.appendChild(edit);
             }
             let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
             span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
