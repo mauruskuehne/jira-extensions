@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.11
+// @version     2.0.12
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -27,7 +27,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
  * {1} Zusammenfassung (z.B. Erweiterung foobar)
  * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung, sonst "fix".
  *
- *
  */
 
 /* global GM_getValue, GM_setValue, GM_log, GM_xmlhttpRequest */
@@ -38,8 +37,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const tempoBaseUrl = 'https://api.tempo.io/4/';
   // tempo frontend link.
   const tempoLink = 'https://innosolv.atlassian.net/plugins/servlet/ac/io.tempo.jira/tempo-app';
-  const tempoEditLink = tempoLink + '#!/my-work/week?type=TIME&date=';
-  const tempoConfigLink = tempoLink + '#!/configuration/api-integration';
+  const tempoEditLink = `${tempoLink}#!/my-work/week?type=TIME&date=`;
+  const tempoConfigLink = `${tempoLink}#!/configuration/api-integration`;
   // cache time periods for x days in local storage.
   const periodsCacheValidForDays = 1;
   // cache time schedules for x days in local storage.
@@ -56,7 +55,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const extConfigDialogId = 'jiraExtConfigDialog';
   const extConfigDialogEditButtonId = 'jiraExtConfigDialogEditButtonDialog';
   const extConfigDialogTempoDetailsId = 'jiraExtConfigDialogTempoDetails';
-  const extConfigDialogTempoApproverId = 'jiraExtConfigDialogTempoApprover';
   // tempo integration id
   const tempoId = 'inno-tempo';
   // configuration menu item id
@@ -68,7 +66,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const persistKeyTempoDisabled = 'tempoDisabled';
   const persistKeyTempoToken = 'tempoToken';
   const persistKeyTempoTokenAllowsSchedule = 'tempoTokenAllowsSchedule';
-  const persistKeyTempoApprover = 'tempoApprover';
   const persistKeyTempoPeriods = 'tempoPeriods';
   const persistKeyTempoSchedule = 'tempoSchedule';
   const persistKeyTempoApprovals = 'tempoApprovals';
@@ -183,8 +180,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     `.${configMenuItemId}:focus{background-color:transparent;color:currentColor;text-decoration:none;}`;
 
   const configHelpText1 = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
-    'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen ' +
-    '(und verwalten, falls "Periode einreichen" möglich sein soll) /\n' +
+    'Ablauf=\'365 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen /\n' +
     'Bereich für Zeiträume: Zeiträume anzeigen /\nBereich der Schemata: Schemata anzeigen /\n' +
     'Bereich der Zeitnachweise: Zeitnachweise anzeigen\'\n' +
     '➡ Bestätigen \n➡ Kopieren';
@@ -365,14 +361,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {string|false} formatted value or false if data could not be gathered.
    */
   function getDataAndFormat(format) {
-    const fmt = format || '{1} {2}';
+    const fmt = format || '{0} {1}';
     const { jiraNumber, title, prefix } = getData();
     if (!jiraNumber || !title || !prefix) return false;
     let txtToCopy = fmt.split('{0}').join(jiraNumber);
     txtToCopy = txtToCopy.split('{1}').join(title);
-    if (txtToCopy.includes('{2}')) {
       txtToCopy = txtToCopy.split('{2}').join(prefix);
-    }
     return txtToCopy;
   }
 
@@ -559,7 +553,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} specialChars handle special chars like \t \r \n
    */
   function addLabelAndInput(node, id, title, value, specialChars = false) {
-    const label = createNode('label', undefined, title + ':');
+    const label = createNode('label', undefined, `${title}:`);
     label.setAttribute('for', id);
     node.appendChild(label);
     const input = createNode('input', undefined, undefined, id);
@@ -868,7 +862,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {string} number with leading zero.
    */
   function lZero(num) {
-    return ('0' + (num)).slice(-2);
+    return String(num).padStart(2, '0');
   }
 
   /**
@@ -966,71 +960,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Check if approver has been set.
    * @returns {boolean} approver has been set.
    */
-  function hasApprover() {
-    const ret = GM_getValue(persistKeyTempoApprover, '');
-    return !!ret;
-  }
-
-  /**
-   * Get approver value.
-   * @returns {string} tempo time sheet approver.
-   */
-  function getApprover() {
-    return GM_getValue(persistKeyTempoApprover, '');
-  }
-
-  /**
-   * Sets the approver value.
-   * @param {string} approver tempo time sheet approver.
-   */
-  function setApprover(approver) {
-    GM_setValue(persistKeyTempoApprover, approver);
-  }
-
-  /**
-   * Submits a period for approval.
-   * @param {TempoPeriod} period to submit for approval.
-   * @param {string} actionUrl action to use for approval request.
-   */
-  function sendInForApproval(period, actionUrl) {
-    if (actionUrl) {
-      if (confirm(`Send Period ${period.from} - ${period.to} for approval?`) == true) {
-        GM_xmlhttpRequest({
-          method: 'POST',
-          url: actionUrl,
-          data: `{"comment":"jira extension","reviewerAccountId": "${getApprover()}"}`,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${GM_getValue(persistKeyTempoToken, '')}`
-          },
-          responseType: 'json',
-          onload: (resp) => {
-            if (resp.status == 200) {
-              const cacheExp = new Date();
-              cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
-              const submitAction = resp.response.actions ?
-                (resp.response.actions.submit ? (resp.response.actions.submit.self) : null) : null;
-              const ret = new CachedTempoApproval(
-                cacheExp.toISOString(),
-                resp.response.requiredSeconds,
-                resp.response.timeSpentSeconds,
-                resp.response.status.key,
-                submitAction
-              );
-              saveApprovalStatus(period.fromKey(), ret);
-              window.alert(`great success 😊 (refresh periods to update display) ${resp.response.status}`);
-            } else {
-              GM_log(`innoTempo: error submitting period for review.
-            status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
-            }
-          }
-        });
-      }
-    } else {
-      GM_log('innoTempo: error submitting period (missing submit action)!');
-    }
-  }
 
   /**
    * Returns the default properties object for a XMLHttp "GET" request.
@@ -1041,7 +970,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function getPropsForGetRequest(relativeUrl, withToken) {
     return {
       method: 'GET',
-      url: tempoBaseUrl + relativeUrl,
+      url: `${tempoBaseUrl}${relativeUrl}`,
       headers: {
         'Accept': 'application/json',
         'Authorization': `Bearer ${(withToken ? withToken : GM_getValue(persistKeyTempoToken, ''))}`
@@ -1301,19 +1230,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function saveAndCloseInnoExtensionConfigDialog() {
     let hasChanges = false;
     const integrationEnabledElement = document.getElementById('tempoIntegrationEnabled');
-    const settingApproverElement = document.getElementById(extConfigDialogTempoApproverId);
-    if (integrationEnabledElement && settingApproverElement) {
+    if (integrationEnabledElement) {
       const currentDisabled = isTempoDisabled();
       const settingDisabled = !integrationEnabledElement.checked;
       if (currentDisabled !== settingDisabled) {
         hasChanges = true;
         setTempoDisabled(settingDisabled);
-      }
-      const currentApprover = getApprover();
-      const settingApprover = settingApproverElement.value;
-      if (currentApprover !== settingApprover) {
-        hasChanges = true;
-        setApprover(settingApprover);
       }
 
       if (hasChanges) {
@@ -1424,14 +1346,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       helpToggle.innerHTML = svgInfoCircle;
       tempoGroup.appendChild(helpToggle);
       tempoGroup.appendChild(createNode('div', 'help inno-hidden', configHelpText1, helpId));
-      const approverLbl = createNode('label', 'inno-margintop', 'Timesheet Approver (User ID):');
-      approverLbl.setAttribute('for', extConfigDialogTempoApproverId);
-      tempoGroup.appendChild(approverLbl);
-      const approverInp = createNode('input', undefined, undefined, extConfigDialogTempoApproverId);
-      approverInp.type = 'text';
-      approverInp.value = getApprover();
-      approverInp.placeholder = 'Timesheet Approver (User ID)';
-      tempoGroup.appendChild(approverInp);
       const btnRow = createNode('div', 'buttonrow');
       const btn = createNode('button', 'inno-savebtn', 'check and save tempo data');
       btn.onclick = async () => {
