@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.11
+// @version     2.0.12
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -27,7 +27,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
  * {1} Zusammenfassung (z.B. Erweiterung foobar)
  * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung, sonst "fix".
  *
- *
  */
 
 /* global GM_getValue, GM_setValue, GM_log, GM_xmlhttpRequest */
@@ -38,8 +37,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const tempoBaseUrl = 'https://api.tempo.io/4/';
   // tempo frontend link.
   const tempoLink = 'https://innosolv.atlassian.net/plugins/servlet/ac/io.tempo.jira/tempo-app';
-  const tempoEditLink = tempoLink + '#!/my-work/week?type=TIME&date=';
-  const tempoConfigLink = tempoLink + '#!/configuration/api-integration';
+  const tempoEditLink = `${tempoLink}#!/my-work/week?type=TIME&date=`;
+  const tempoConfigLink = `${tempoLink}#!/configuration/api-integration`;
   // cache time periods for x days in local storage.
   const periodsCacheValidForDays = 1;
   // cache time schedules for x days in local storage.
@@ -50,13 +49,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const tempoMarkPeriodTooOldAfterDays = 14;
   // delay to update tempo display: jira/wiki sometimes remove/recreate the "create" button.
   const tempoUpdateDelayMs = 1500;
+  const tempoFetchPastDate = 40;
   // setTimeout handle to avoid firing multiple times.
   let tempoUpdateTimer = 0;
   // configuration dialog id
   const extConfigDialogId = 'jiraExtConfigDialog';
   const extConfigDialogEditButtonId = 'jiraExtConfigDialogEditButtonDialog';
   const extConfigDialogTempoDetailsId = 'jiraExtConfigDialogTempoDetails';
-  const extConfigDialogTempoApproverId = 'jiraExtConfigDialogTempoApprover';
   // tempo integration id
   const tempoId = 'inno-tempo';
   // configuration menu item id
@@ -68,7 +67,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const persistKeyTempoDisabled = 'tempoDisabled';
   const persistKeyTempoToken = 'tempoToken';
   const persistKeyTempoTokenAllowsSchedule = 'tempoTokenAllowsSchedule';
-  const persistKeyTempoApprover = 'tempoApprover';
   const persistKeyTempoPeriods = 'tempoPeriods';
   const persistKeyTempoSchedule = 'tempoSchedule';
   const persistKeyTempoApprovals = 'tempoApprovals';
@@ -137,6 +135,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);background:var(--ds-background-neutral-hovered);}` +
     `#${tempoId} .inno-cursor {cursor:pointer;}` +
     `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
+    `#${tempoId} i.small {font-style:normal;font-size:0.75rem;}` +
+    `#${tempoId} i.small a {font-size:0.6rem;margin-left:0.2rem;}` +
     `#${tempoId} span.inno-orange{color:var(--ds-text-accent-orange);` +
     'background-color:var(--ds-background-accent-orange-subtler);border-color:var(--ds-border-accent-orange);}' +
     `#${tempoId} span.inno-red{color:var(--ds-text-accent-red);` +
@@ -183,8 +183,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     `.${configMenuItemId}:focus{background-color:transparent;color:currentColor;text-decoration:none;}`;
 
   const configHelpText1 = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
-    'Ablauf=\'5000 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen ' +
-    '(und verwalten, falls "Periode einreichen" möglich sein soll) /\n' +
+    'Ablauf=\'365 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen /\n' +
     'Bereich für Zeiträume: Zeiträume anzeigen /\nBereich der Schemata: Schemata anzeigen /\n' +
     'Bereich der Zeitnachweise: Zeitnachweise anzeigen\'\n' +
     '➡ Bestätigen \n➡ Kopieren';
@@ -218,9 +217,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
      * @param {number} required number of seconds
      * @param {number} logged number of seconds
      * @param {string} statusKey status of period
-     * @param {string|null} submitAction url to submit period for review
+     * @param {string|null} errorText error text, if statusKey == "ERROR"
      */
-    constructor(cache, required, logged, statusKey, submitAction) {
+    constructor(cache, required, logged, statusKey, errorText) {
       /** @type {string} */
       this.cache = cache;
       /** @type {number} */
@@ -230,7 +229,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       /** @type {string} */
       this.statusKey = statusKey;
       /** @type {string|null} */
-      this.submitAction = submitAction;
+      this.errorText = errorText;
     }
   }
 
@@ -365,14 +364,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {string|false} formatted value or false if data could not be gathered.
    */
   function getDataAndFormat(format) {
-    const fmt = format || '{1} {2}';
+    const fmt = format || '{0} {1}';
     const { jiraNumber, title, prefix } = getData();
     if (!jiraNumber || !title || !prefix) return false;
     let txtToCopy = fmt.split('{0}').join(jiraNumber);
     txtToCopy = txtToCopy.split('{1}').join(title);
-    if (txtToCopy.includes('{2}')) {
-      txtToCopy = txtToCopy.split('{2}').join(prefix);
-    }
+    txtToCopy = txtToCopy.split('{2}').join(prefix);
     return txtToCopy;
   }
 
@@ -559,7 +556,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} specialChars handle special chars like \t \r \n
    */
   function addLabelAndInput(node, id, title, value, specialChars = false) {
-    const label = createNode('label', undefined, title + ':');
+    const label = createNode('label', undefined, `${title}:`);
     label.setAttribute('for', id);
     node.appendChild(label);
     const input = createNode('input', undefined, undefined, id);
@@ -796,6 +793,35 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
+   * Fetches data from tempo API.
+   * @param {string} relativeUrl relative URL.
+   * @param {string|undefined} withToken use specific token.
+   * @returns {Promise<any>} data.
+   */
+  function fetchData(relativeUrl, withToken) {
+    return new Promise((resolve, reject) => {
+      const start = performance.now();
+      GM_xmlhttpRequest({
+        ...getPropsForGetRequest(relativeUrl, withToken),
+        onload: (resp) => {
+          if (resp.status == 200) {
+            const shortUrl = /^.*?(?=\/|\?|$)/.exec(relativeUrl)[0];
+            GM_log(`fetchData ${performance.now() - start}ms for ${shortUrl}`);
+            resolve(resp.response);
+          } else {
+            if (resp.status == 403 && withToken === undefined) {
+              // unauthorized => token invalid or expired.
+              reject("fetchData: Error 403 Unauthorized. Check your token!");
+            }
+            reject(resp.status);
+          }
+        },
+        fetch: true,
+      })
+    });
+  }
+
+  /**
    * Checks, if the provided token can access the tempo api, stores the token on success.
    * @param {string} token to check and store if request was successful.
    * @returns {Promise<boolean|string>} success state. If string is returned, it contains the "yes, but" reason.
@@ -868,7 +894,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {string} number with leading zero.
    */
   function lZero(num) {
-    return ('0' + (num)).slice(-2);
+    return String(num).padStart(2, '0');
   }
 
   /**
@@ -907,129 +933,74 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       lnk.innerHTML = svgTempo;
       node.appendChild(lnk);
       const periodsSeen = [];
-      try {
-        for (const p of displayPeriods) {
-          periodsSeen.push(p.fromKey());
-          const approvalStatus = await getApprovalStatus(p, forceUpdate, now);
-          if (approvalStatus.statusKey == 'OPEN') {
-            const fromDate = getDateFromString(p.from);
-            const toDate = getDateFromString(p.to);
-            const isCurrentWeek = now < toDate;
-            // start of period was more than x days ago - and thus should be completed immediately.
-            const tooOldDate = new Date();
-            tooOldDate.setDate(tooOldDate.getDate() - tempoMarkPeriodTooOldAfterDays);
-            const isTooOld = fromDate < tooOldDate;
-            const useSchedule = nowPeriod !== null && nowPeriod == p;
-            const required = await getRequiredTime(approvalStatus.required, useSchedule, nowPeriod, forceUpdate, now);
-            const span = createNode('span');
-            span.appendChild(
-              document.createTextNode(`${isTooOld ? '❌ ' : ''}${fromDate.getDate()}.${fromDate.getMonth() + 1}.`)
-            );
-            span.appendChild(createNode('br'));
-            span.appendChild(document.createTextNode('Open'));
-            if (!isCurrentWeek && approvalStatus.submitAction && hasApprover()) {
-              const einreichen = createNode('strong', 'inno-cursor', '📨', undefined, 'Periode einreichen');
-              einreichen.onclick = () => { sendInForApproval(p, approvalStatus.submitAction); };
-              span.appendChild(einreichen);
-            }
-            if (!isCurrentWeek) {
-              const edit = createNode('a', undefined, '✏️', undefined, 'In Tempo bearbeiten');
-              edit.href = `${tempoEditLink}${getYMD(fromDate)}`;
-              span.appendChild(edit);
-            }
-            let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
-            span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
-            const lastUpdate = new Date(approvalStatus.cache);
-            lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
-            span.title = (isCurrentWeek ? 'Current week\n' : '') +
-              (isTooOld ? 'Do it now‼️\n' : '') +
-              `${missing} hours\n` +
-              `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
-            node.appendChild(span);
+      for (const p of displayPeriods) {
+        periodsSeen.push(p.fromKey());
+        const approvalStatus = await getApprovalStatus(p, forceUpdate, now);
+
+        const fromDate = getDateFromString(p.from);
+        const toDate = getDateFromString(p.to);
+        const isCurrentWeek = now < toDate;
+        const lastUpdate = new Date(approvalStatus.cache);
+        lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
+
+        if (approvalStatus.statusKey == 'OPEN') {
+
+          // start of period was more than x days ago - and thus should be completed immediately.
+          const tooOldDate = new Date();
+          tooOldDate.setDate(tooOldDate.getDate() - tempoMarkPeriodTooOldAfterDays);
+          const isTooOld = fromDate < tooOldDate;
+          const useSchedule = nowPeriod !== null && nowPeriod == p;
+          const required = await getRequiredTime(approvalStatus.required, useSchedule, nowPeriod, forceUpdate, now);
+          const span = createNode('span');
+          span.appendChild(
+            document.createTextNode(`${isTooOld ? '❌ ' : ''}${fromDate.getDate()}.${fromDate.getMonth() + 1}.`)
+          );
+          span.appendChild(createNode('br'));
+          const i = createNode('i', 'small');
+          i.appendChild(document.createTextNode('Open'));
+          if (!isCurrentWeek) {
+            const edit = createNode('a', undefined, '✏️', undefined, 'In Tempo bearbeiten');
+            edit.href = `${tempoEditLink}${getYMD(fromDate)}`;
+            i.appendChild(edit);
           }
+          span.appendChild(i);
+          let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
+          span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
+          span.title = (isCurrentWeek ? 'Current week\n' : '') +
+            (isTooOld ? 'Do it now‼️\n' : '') +
+            `${missing} hours\n` +
+            `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
+          node.appendChild(span);
         }
-        const refresh = createNode('span', 'inno-refresh', undefined, undefined, 'force update');
-        refresh.innerHTML = svgRefresh;
-        refresh.onclick = () => { getTempoData(node, true); };
-        node.appendChild(refresh);
-      } catch (e) {
-        GM_log(`getTempoData: Exception ${e}`);
-        return;
+        if (approvalStatus.statusKey == 'ERROR') {
+          const span = createNode('span', 'inno-red');
+          span.appendChild(document.createTextNode(`❌ ${fromDate.getDate()}.${fromDate.getMonth() + 1}.`));
+          span.appendChild(createNode('br'));
+          const i = createNode('i', 'small');
+          i.appendChild(document.createTextNode('ERROR'));
+          const edit = createNode('a', undefined, '✏️', undefined, 'In Tempo bearbeiten');
+          edit.href = `${tempoEditLink}${getYMD(fromDate)}`;
+          i.appendChild(edit);
+          span.appendChild(i);
+          span.title = `Error!\n${approvalStatus.errorText}\n` +
+            `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
+          node.appendChild(span);
+        }
       }
       cleanupApprovalStatus(periodsSeen);
     } catch (e) {
       GM_log(`getTempoData: Exception ${e}`);
+      const span = createNode('span', 'inno-red');
+      span.appendChild(document.createTextNode('⚠️ Error'));
+      span.appendChild(createNode('br'));
+      span.appendChild(document.createTextNode('See Tooltip.'));
+      span.title = `Error:\n${e}`;
+      node.appendChild(span);
     }
-  }
-
-  /**
-   * Check if approver has been set.
-   * @returns {boolean} approver has been set.
-   */
-  function hasApprover() {
-    const ret = GM_getValue(persistKeyTempoApprover, '');
-    return !!ret;
-  }
-
-  /**
-   * Get approver value.
-   * @returns {string} tempo time sheet approver.
-   */
-  function getApprover() {
-    return GM_getValue(persistKeyTempoApprover, '');
-  }
-
-  /**
-   * Sets the approver value.
-   * @param {string} approver tempo time sheet approver.
-   */
-  function setApprover(approver) {
-    GM_setValue(persistKeyTempoApprover, approver);
-  }
-
-  /**
-   * Submits a period for approval.
-   * @param {TempoPeriod} period to submit for approval.
-   * @param {string} actionUrl action to use for approval request.
-   */
-  function sendInForApproval(period, actionUrl) {
-    if (actionUrl) {
-      if (confirm(`Send Period ${period.from} - ${period.to} for approval?`) == true) {
-        GM_xmlhttpRequest({
-          method: 'POST',
-          url: actionUrl,
-          data: `{"comment":"jira extension","reviewerAccountId": "${getApprover()}"}`,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${GM_getValue(persistKeyTempoToken, '')}`
-          },
-          responseType: 'json',
-          onload: (resp) => {
-            if (resp.status == 200) {
-              const cacheExp = new Date();
-              cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
-              const submitAction = resp.response.actions ?
-                (resp.response.actions.submit ? (resp.response.actions.submit.self) : null) : null;
-              const ret = new CachedTempoApproval(
-                cacheExp.toISOString(),
-                resp.response.requiredSeconds,
-                resp.response.timeSpentSeconds,
-                resp.response.status.key,
-                submitAction
-              );
-              saveApprovalStatus(period.fromKey(), ret);
-              window.alert(`great success 😊 (refresh periods to update display) ${resp.response.status}`);
-            } else {
-              GM_log(`innoTempo: error submitting period for review.
-            status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
-            }
-          }
-        });
-      }
-    } else {
-      GM_log('innoTempo: error submitting period (missing submit action)!');
-    }
+    const refresh = createNode('span', 'inno-refresh', undefined, undefined, 'force update');
+    refresh.innerHTML = svgRefresh;
+    refresh.onclick = () => { getTempoData(node, true); };
+    node.appendChild(refresh);
   }
 
   /**
@@ -1041,7 +1012,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function getPropsForGetRequest(relativeUrl, withToken) {
     return {
       method: 'GET',
-      url: tempoBaseUrl + relativeUrl,
+      url: `${tempoBaseUrl}${relativeUrl}`,
       headers: {
         'Accept': 'application/json',
         'Authorization': `Bearer ${(withToken ? withToken : GM_getValue(persistKeyTempoToken, ''))}`
@@ -1057,47 +1028,34 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string} withToken forces http request with this token, ignores cache.
    * @returns {Promise<TempoPeriod[]>} tempo periods within the past month.
    */
-  function getTempoPeriods(now, forceUpdate, withToken) {
-    return new Promise((resolve, reject) => {
-      const cachedPeriods = GM_getValue(persistKeyTempoPeriods, { cache: getYMD(now), periods: [] });
-      const cachedDate = new Date(cachedPeriods.cache);
-      if (cachedDate > now && !withToken && !forceUpdate) {
-        /** @type {TempoPeriod[]} */
-        const periods = [];
-        for (let i = 0; i < cachedPeriods.periods.length; i++) {
-          const period = cachedPeriods.periods[i];
-          periods.push(new TempoPeriod(period.from, period.to));
-        }
-        resolve(periods);
-        return;
-      } else {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-        const pastParam = getYMD(oneMonthAgo);
-        const nowParam = getYMD(now);
-        GM_xmlhttpRequest({
-          ...getPropsForGetRequest(`periods?from=${pastParam}&to=${nowParam}`, withToken),
-          onload: (resp) => {
-            if (resp.status == 200) {
-              const cacheExp = new Date();
-              cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
-              /** @type {TempoPeriod[]} */
-              const periods = [];
-              for (let i = 0; i < resp.response.periods.length; i++) {
-                const period = resp.response.periods[i];
-                periods.push(new TempoPeriod(period.from, period.to));
-              }
-              GM_setValue(persistKeyTempoPeriods, { cache: getYMD(cacheExp), periods: periods });
-              resolve(periods);
-            } else {
-              GM_log(`innoTempo: error fetching periods.
-            status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
-              reject(resp.status);
-            }
-          }
-        });
+  async function getTempoPeriods(now, forceUpdate, withToken) {
+    const cachedPeriods = GM_getValue(persistKeyTempoPeriods, { cache: getYMD(now), periods: [] });
+    const cachedDate = new Date(cachedPeriods.cache);
+    if (cachedDate > now && !withToken && !forceUpdate) {
+      /** @type {TempoPeriod[]} */
+      const periods = [];
+      for (let i = 0; i < cachedPeriods.periods.length; i++) {
+        const period = cachedPeriods.periods[i];
+        periods.push(new TempoPeriod(period.from, period.to));
       }
-    });
+      return periods;
+    } else {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - tempoFetchPastDate);
+      const pastParam = getYMD(pastDate);
+      const nowParam = getYMD(now);
+      const result = await fetchData(`periods?from=${pastParam}&to=${nowParam}`, withToken);
+      const cacheExp = new Date();
+      cacheExp.setDate(cacheExp.getDate() + periodsCacheValidForDays);
+      /** @type {TempoPeriod[]} */
+      const periods = [];
+      for (let i = 0; i < result.periods.length; i++) {
+        const period = result.periods[i];
+        periods.push(new TempoPeriod(period.from, period.to));
+      }
+      GM_setValue(persistKeyTempoPeriods, { cache: getYMD(cacheExp), periods: periods });
+      return periods;
+    }
   }
 
   /**
@@ -1131,7 +1089,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string|undefined} token use this token for request.
    * @returns {Promise<TempoSchedule[]>} tempo schedule for user.
    */
-  function getSchedule(period, forceUpdate, now, token) {
+  async function getSchedule(period, forceUpdate, now, token) {
     return new Promise((resolve, reject) => {
       if (!getTempoTokenAllowsSchedule() && !forceUpdate) {
         reject(couldNotReadUserScheduleText);
@@ -1148,10 +1106,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         resolve(schedule);
         return;
       } else {
+        const start = performance.now();
         GM_xmlhttpRequest({
           ...getPropsForGetRequest(`user-schedule?from=${period.from}&to=${period.to}`, token),
           onload: (resp) => {
             if (resp.status == 200) {
+              const gotResult = performance.now();
               if (resp.response.results && resp.response.results.length > 0) {
                 const cacheExp = new Date();
                 cacheExp.setDate(cacheExp.getDate() + scheduleCacheValidForDays);
@@ -1162,6 +1122,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                   schedule.push(new TempoSchedule(sched.date, sched.requiredSeconds, sched.type));
                 }
                 GM_setValue(persistKeyTempoSchedule, { cache: getYMD(cacheExp), schedule: schedule });
+                GM_log(`getSchedule: Request ${gotResult - start}ms.`);
                 resolve(schedule);
                 return;
               }
@@ -1217,45 +1178,43 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Date} now current Date for easier access.
    * @returns {Promise<CachedTempoApproval>} approval status of period.
    */
-  function getApprovalStatus(period, forceUpdate, now) {
-    return new Promise((resolve, reject) => {
-      const approvals = getApprovalStatusAll();
-      const fromKey = period.fromKey();
-      if (approvals[fromKey]) {
-        const approval = approvals[fromKey];
-        const cachedDate = new Date(approval.cache);
-        if (cachedDate > now && !forceUpdate) {
-          resolve(approval);
-          return;
-        }
+  async function getApprovalStatus(period, forceUpdate, now) {
+    const approvals = getApprovalStatusAll();
+    const fromKey = period.fromKey();
+    if (approvals[fromKey]) {
+      const approval = approvals[fromKey];
+      const cachedDate = new Date(approval.cache);
+      if (cachedDate > now && !forceUpdate) {
+        return approval;
       }
-      GM_xmlhttpRequest({
-        ...getPropsForGetRequest(
-          `timesheet-approvals/user/${GM_getValue(persistKeyJiraUser, '')}?from=${period.from}&to=${period.to}`
-        ),
-        onload: (resp) => {
-          if (resp.status == 200) {
-            const cacheExp = new Date();
-            cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
-            const submitAction = resp.response.actions ?
-              (resp.response.actions.submit ? (resp.response.actions.submit.self) : null) : null;
-            const ret = new CachedTempoApproval(
-              cacheExp.toISOString(),
-              resp.response.requiredSeconds,
-              resp.response.timeSpentSeconds,
-              resp.response.status.key,
-              submitAction
-            );
-            saveApprovalStatus(fromKey, ret);
-            resolve(ret);
-          } else {
-            GM_log(`innoTempo: error fetching approvals.
-          status:${resp.status} (${resp.statusText}), response:${resp.responseText}`);
-            reject(resp);
-          }
-        }
-      });
-    });
+    }
+    const cacheExp = new Date();
+    cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
+
+    try {
+      const result = await fetchData(
+        `timesheet-approvals/user/${GM_getValue(persistKeyJiraUser, '')}?from=${period.from}&to=${period.to}`
+      );
+      const ret = new CachedTempoApproval(
+        cacheExp.toISOString(),
+        result.requiredSeconds,
+        result.timeSpentSeconds,
+        result.status.key,
+        null
+      );
+      saveApprovalStatus(fromKey, ret);
+      return ret;
+    } catch (e) {
+      const ret = new CachedTempoApproval(
+        cacheExp.toISOString(),
+        0,
+        0,
+        'ERROR',
+        e
+      );
+      saveApprovalStatus(fromKey, ret);
+      return ret;
+    }
   }
 
   /**
@@ -1301,19 +1260,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function saveAndCloseInnoExtensionConfigDialog() {
     let hasChanges = false;
     const integrationEnabledElement = document.getElementById('tempoIntegrationEnabled');
-    const settingApproverElement = document.getElementById(extConfigDialogTempoApproverId);
-    if (integrationEnabledElement && settingApproverElement) {
+    if (integrationEnabledElement) {
       const currentDisabled = isTempoDisabled();
       const settingDisabled = !integrationEnabledElement.checked;
       if (currentDisabled !== settingDisabled) {
         hasChanges = true;
         setTempoDisabled(settingDisabled);
-      }
-      const currentApprover = getApprover();
-      const settingApprover = settingApproverElement.value;
-      if (currentApprover !== settingApprover) {
-        hasChanges = true;
-        setApprover(settingApprover);
       }
 
       if (hasChanges) {
@@ -1424,14 +1376,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       helpToggle.innerHTML = svgInfoCircle;
       tempoGroup.appendChild(helpToggle);
       tempoGroup.appendChild(createNode('div', 'help inno-hidden', configHelpText1, helpId));
-      const approverLbl = createNode('label', 'inno-margintop', 'Timesheet Approver (User ID):');
-      approverLbl.setAttribute('for', extConfigDialogTempoApproverId);
-      tempoGroup.appendChild(approverLbl);
-      const approverInp = createNode('input', undefined, undefined, extConfigDialogTempoApproverId);
-      approverInp.type = 'text';
-      approverInp.value = getApprover();
-      approverInp.placeholder = 'Timesheet Approver (User ID)';
-      tempoGroup.appendChild(approverInp);
       const btnRow = createNode('div', 'buttonrow');
       const btn = createNode('button', 'inno-savebtn', 'check and save tempo data');
       btn.onclick = async () => {
