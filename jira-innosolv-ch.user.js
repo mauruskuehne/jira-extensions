@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.13
+// @version     2.0.14
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -1442,7 +1442,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       }
     } else if (headerText == 'JIRA') {
       if (GM_getValue(persistKeyJiraUser, '') == '') {
-        const link = node.nextSibling;
+        const link = node.nextSibling.querySelector('a[href^="/jira/people/');
         let match;
         if (link && link.href && (match = /\/jira\/people\/([0-9a-f]+)$/.exec(link.href))) {
           GM_setValue(persistKeyJiraUser, match[1]);
