@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.12
+// @version     2.0.13
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -705,10 +705,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node label to update.
    */
   function updateTempo(node) {
-    if (!checkForCssVar(node)) {
-      return;
-    }
     if (!isTempoDisabled()) {
+      if (!checkForCssVar()) {
+        // page has not finished loading yet, wait some time and re-run function...
+        window.setTimeout(() => updateTempo(node), 300);
+        return;
+      }
       if (isTempoConfigured()) {
         getTempoData(node, false);
       } else {
@@ -727,26 +729,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if css variable "--ds-text" is set in the :root element.
-   * @param {Element} node DOM Node for Tempo integration.
-   * @returns {boolean} check is ok.
+   * @returns {boolean} css variable is present.
    */
-  function checkForCssVar(node) {
+  function checkForCssVar() {
     const styles = getComputedStyle(document.querySelector(':root'));
     const textvar = styles.getPropertyValue('--ds-text');
     if (!textvar) {
-      node.innerText = '';
-      node.title = '';
-      node.style = 'background-color:orangered;';
-      const action = createNode('span');
-      const pre = document.createTextNode('Aktiviere die Funktion "Helle und dunkle Themes" ');
-      action.appendChild(pre);
-      action.appendChild(createNode('br'));
-      const link = createNode('a', undefined, 'in "Persönliche Einstellungen"');
-      link.href = '/secure/ViewPersonalSettings.jspa';
-      action.appendChild(link);
-      const post = document.createTextNode(' und lade die Seite neu!');
-      action.appendChild(post);
-      node.appendChild(action);
       return false;
     }
     return true;
