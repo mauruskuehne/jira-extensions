@@ -531,10 +531,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     } else {
       node.setAttribute('data-editing-id', id);
       const editDiv = createNode('div', 'editForm');
-      addLabelAndInput(editDiv, 'buttonText', 'Text', buttonDefinition.text);
-      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title, true);
-      addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format, true);
-      addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
+      addLabelAndInput(editDiv, 'buttonText', 'Text', 'Nur wenn Icon leer ist.', buttonDefinition.text);
+      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', undefined, buttonDefinition.title, true);
+      addLabelAndInput(
+        editDiv,
+        'buttonFormat',
+        'Format',
+        '{0}=Vorgang-Nr., {1}=Titel, {2}=Prefix \\t=tab \\r=CR \\n=LF',
+        buttonDefinition.format,
+        true);
+      addLabelAndInput(editDiv, 'buttonIcon', 'Icon', undefined, buttonDefinition.icon);
       const actions = createNode('div', 'buttonrow');
       const save = createNode('button', 'inno-savebtn', 'save changes');
       save.onclick = () => window.alert('not implemented.');
@@ -552,13 +558,24 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node container to add the label and input to.
    * @param {string} id node id for input element.
    * @param {string} title of the label.
+   * @param {string|undefined} subtitle of the label.
    * @param {string} value of the input element.
    * @param {boolean} specialChars handle special chars like \t \r \n
    */
-  function addLabelAndInput(node, id, title, value, specialChars = false) {
-    const label = createNode('label', undefined, `${title}:`);
-    label.setAttribute('for', id);
-    node.appendChild(label);
+  function addLabelAndInput(node, id, title, subtitle, value, specialChars = false) {
+    if (subtitle === undefined) {
+      const label = createNode('label', undefined, `${title}: `);
+      label.setAttribute('for', id);
+      node.appendChild(label);
+    } else {
+      const label = createNode('label');
+      label.setAttribute('for', id);
+      const labelText = document.createTextNode(`${title}: `);
+      label.appendChild(labelText);
+      const hint = createNode('small', undefined, subtitle);
+      label.appendChild(hint);
+      node.appendChild(label);
+    }
     const input = createNode('input', undefined, undefined, id);
     input.type = 'text';
     input.value = specialChars ? transformSpecialChars(value) : value;
