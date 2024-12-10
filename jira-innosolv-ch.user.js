@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.14
+// @version     2.0.15
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -123,7 +123,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'margin:0 0.43em;}';
   const tempoStyles = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
     `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
-    'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;}' +
+    'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;' +
+    'position:relative;}' +
     `#${tempoId} a{text-decoration:none;}#${tempoId} a:hover{text-decoration:none;}` +
     `#${tempoId} > a{color:var(--ds-icon-accent-blue);padding:0.75em;margin:0 0.3em;` +
     'border-radius:0.3em;background:var(--ds-background-neutral);z-index:20;}' +
@@ -138,6 +139,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'background-color:var(--ds-background-accent-red-subtler);border-color:var(--ds-border-accent-red);}' +
     `#${tempoId} span.inno-yellow{color:var(--ds-text-accent-yellow);` +
     'background-color:var(--ds-background-accent-yellow-subtler);border-color:var(--ds-border-accent-yellow);}' +
+    `#${tempoId} span:after{content:" ";display:block;position:absolute;width:100%;top:0;left:0;right:0;` +
+    'background:rgba(0,0,0,0.25);height:var(--innoprogress,0%);pointer-events:none;}' +
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
@@ -944,8 +947,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             i.appendChild(edit);
           }
           span.appendChild(i);
-          let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
+          const missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
           span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
+          let missingPercent = 0;
+          if (required > 0) {
+            missingPercent = 100 - Math.min(Math.round(100.0 / required * approvalStatus.logged), 100);
+          }
+          span.style = `--innoprogress:${missingPercent}%;`;
           span.title = (isCurrentWeek ? 'Current week\n' : '') +
             (isTooOld ? 'Do it now‼️\n' : '') +
             `${missing} hours\n` +
