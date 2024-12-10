@@ -25,8 +25,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
  * Ersetzungsvariablen Format:
  * {0} Vorgangsnummer (z.B. EN-121)
  * {1} Zusammenfassung (z.B. Erweiterung foobar)
- * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung, sonst "fix".
- *
+ * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung oder G3-Vorgang, sonst "fix".
  */
 
 /* global GM_getValue, GM_setValue, GM_log, GM_xmlhttpRequest */
@@ -313,15 +312,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   /**
    * Jira issue data object
    * @typedef {object} jiraIssueData
-   * @property {string} title of jira issue
-   * @property {string} jiraNumber id of jira issue
-   * @property {string} prefix either 'fix' or 'feat'
+   * @property {string|undefined} title of jira issue
+   * @property {string|undefined} jiraNumber id of jira issue
+   * @property {'fix'|'feat'|undefined} prefix commit text prefix
    */
   /**
    * Gets the Title, JIRA "Number" (ID, such as SU-1000), and prefix.
-   * @returns {jiraIssueData|undefined} data of current jira issue.
+   * @returns {jiraIssueData} data of current jira issue.
    */
   function getData() {
+    const emptyData = { jiraNumber: undefined, title: undefined, prefix: undefined };
     const issueLink = (
       // backlog view, detail view
       document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]')
@@ -330,9 +330,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     );
     if (!issueLink) {
       GM_log('jira-innosolv-extensions: could not find issueLink.');
-      return;
+      return emptyData;
     }
     const jiraNumber = issueLink.dataset.tooltip || issueLink.innerText;
+    if (!jiraNumber) {
+      GM_log('jira-innosolv-extensions: could not find issue number.');
+      return emptyData;
+    }
 
     const title = (
       // kanban view with details in a modal, standalone view
@@ -340,22 +344,34 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       // backlog view, detail view
       || Array.from(document.querySelectorAll('h1')).pop()
     ).innerText;
-
-    let prefix = 'fix';
-    if (jiraNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
-      prefix = 'feat';
-    } else if (jiraNumber.startsWith('EN')) {
-      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
-      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
-        prefix = 'feat';
-      }
+    if (!title) {
+      GM_log('jira-innosolv-extensions: could not find issue title.');
+      return emptyData;
     }
 
     return {
       jiraNumber,
       title,
-      prefix,
+      prefix: getPrefix(jiraNumber, title),
     };
+  }
+
+  /**
+   * Gets the commit prefix from issue number and issue title
+   * @param {string} issueNumber issue number
+   * @param {string} title issue title
+   * @returns {'feat'|'fix'} commit text prefix
+   */
+  function getPrefix(issueNumber, title) {
+    if (issueNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
+      return 'feat';
+    } else if (issueNumber.startsWith('EN')) {
+      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
+      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
+        return 'feat';
+      }
+    }
+    return 'fix';
   }
 
   /**
@@ -811,7 +827,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         onload: (resp) => {
           if (resp.status == 200) {
             const shortUrl = /^.*?(?=\/|\?|$)/.exec(relativeUrl)[0];
-            GM_log(`fetchData ${performance.now() - start}ms for ${shortUrl}`);
+            GM_log(`fetchData ${Math.round(performance.now() - start)}ms for ${shortUrl}`);
             resolve(resp.response);
           } else {
             if (resp.status == 403 && withToken === undefined) {
@@ -1127,7 +1143,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                   schedule.push(new TempoSchedule(sched.date, sched.requiredSeconds, sched.type));
                 }
                 GM_setValue(persistKeyTempoSchedule, { cache: getYMD(cacheExp), schedule: schedule });
-                GM_log(`getSchedule: Request ${gotResult - start}ms.`);
+                GM_log(`getSchedule: Request ${Math.round(gotResult - start)}ms.`);
                 resolve(schedule);
                 return;
               }
@@ -1263,17 +1279,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Checks configuration values for changes, saves configuration and closes the dialog.
    */
   function saveAndCloseInnoExtensionConfigDialog() {
-    let hasChanges = false;
+    let changed = false;
     const integrationEnabledElement = document.getElementById('tempoIntegrationEnabled');
     if (integrationEnabledElement) {
       const currentDisabled = isTempoDisabled();
       const settingDisabled = !integrationEnabledElement.checked;
       if (currentDisabled !== settingDisabled) {
-        hasChanges = true;
+        changed = true;
         setTempoDisabled(settingDisabled);
       }
 
-      if (hasChanges) {
+      if (changed) {
         window.alert('you need to reload the current page for changes to take effect.');
       }
       closeInnoExtensionConfigDialog();
@@ -1477,8 +1493,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
    */
   function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce) {
-    let targetNodes, btargetsFound;
-    targetNodes = document.querySelectorAll(selectorTxt);
+    let btargetsFound;
+    const targetNodes = document.querySelectorAll(selectorTxt);
 
     if (targetNodes && targetNodes.length > 0) {
       btargetsFound = true;
@@ -1499,8 +1515,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
 
     //--- Get the timer-control variable for this selector.
-    let controlObj = waitForKeyElements.controlObj || {};
-    let controlKey = selectorTxt.replace(/[^\w]/g, '_');
+    const controlObj = waitForKeyElements.controlObj || {};
+    const controlKey = selectorTxt.replace(/[^\w]/g, '_');
     let timeControl = controlObj[controlKey];
 
     //--- Now set or clear the timer as appropriate.
