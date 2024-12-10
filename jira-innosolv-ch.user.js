@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.14
+// @version     2.0.15
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -25,8 +25,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
  * Ersetzungsvariablen Format:
  * {0} Vorgangsnummer (z.B. EN-121)
  * {1} Zusammenfassung (z.B. Erweiterung foobar)
- * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung, sonst "fix".
- *
+ * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung oder G3-Vorgang, sonst "fix".
  */
 
 /* global GM_getValue, GM_setValue, GM_log, GM_xmlhttpRequest */
@@ -70,7 +69,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const persistKeyTempoPeriods = 'tempoPeriods';
   const persistKeyTempoSchedule = 'tempoSchedule';
   const persistKeyTempoApprovals = 'tempoApprovals';
-  const persistKeyExtraButtons = 'extraButtons';
   const persistKeyButtonDef = 'buttonsDefinition';
   const persistKeyButtonDefVersion = 'buttonsDefinitionVersion';
 
@@ -91,13 +89,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   const svgRefresh = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 11H7.101l.001-.009a4.956 4.956 0 0 1 .752-1.787 5.054 5.054 0 0 1 2.2-1.811c.302-.128.617-.226.938-.291a5.078 5.078 0 0 1 2.018 0 4.978 4.978 0 0 1 2.525 1.361l1.416-1.412a7.036 7.036 0 0 0-2.224-1.501 6.921 6.921 0 0 0-1.315-.408 7.079 7.079 0 0 0-2.819 0 6.94 6.94 0 0 0-1.316.409 7.04 7.04 0 0 0-3.08 2.534 6.978 6.978 0 0 0-1.054 2.505c-.028.135-.043.273-.063.41H2l4 4 4-4zm4 2h2.899l-.001.008a4.976 4.976 0 0 1-2.103 3.138 4.943 4.943 0 0 1-1.787.752 5.073 5.073 0 0 1-2.017 0 4.956 4.956 0 0 1-1.787-.752 5.072 5.072 0 0 1-.74-.61L7.05 16.95a7.032 7.032 0 0 0 2.225 1.5c.424.18.867.317 1.315.408a7.07 7.07 0 0 0 2.818 0 7.031 7.031 0 0 0 4.395-2.945 6.974 6.974 0 0 0 1.053-2.503c.027-.135.043-.273.063-.41H22l-4-4-4 4z"/></svg>';
   const svgInfoCircle = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M11 11h2v6h-2zm0-4h2v2h-2z"/></svg>';
 
-  const defaultButton = {
-    text: 'Msg',
-    title: 'git commit Nachricht kopieren',
-    format: '{2}: {1} [{0}]',
-    icon: svgMessageAltEdit,
-  };
-  const defaultExtraButtons = [
+  const defaultButtons = [
+    {
+      text: 'Msg', title: 'git commit Nachricht kopieren', format: '{2}: {1} [{0}]', icon: svgMessageAltEdit,
+    },
     {
       text: 'No.', title: 'Vorgangnummer kopieren', format: '{0}', icon: svgHash,
     },
@@ -128,7 +123,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'margin:0 0.43em;}';
   const tempoStyles = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
     `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
-    'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;}' +
+    'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;' +
+    'position:relative;}' +
     `#${tempoId} a{text-decoration:none;}#${tempoId} a:hover{text-decoration:none;}` +
     `#${tempoId} > a{color:var(--ds-icon-accent-blue);padding:0.75em;margin:0 0.3em;` +
     'border-radius:0.3em;background:var(--ds-background-neutral);z-index:20;}' +
@@ -143,6 +139,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'background-color:var(--ds-background-accent-red-subtler);border-color:var(--ds-border-accent-red);}' +
     `#${tempoId} span.inno-yellow{color:var(--ds-text-accent-yellow);` +
     'background-color:var(--ds-background-accent-yellow-subtler);border-color:var(--ds-border-accent-yellow);}' +
+    `#${tempoId} span:after{content:" ";display:block;position:absolute;width:100%;top:0;left:0;right:0;` +
+    'background:rgba(0,0,0,0.25);height:var(--innoprogress,0%);pointer-events:none;}' +
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
@@ -190,25 +188,6 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   const couldNotReadUserScheduleText = 'tempo token does not allow reading users schedule information!' +
     ' -- create new tempo token including schema => "read" access rights and save it in the extensions config dialog.';
-
-  // Set extra buttons: Uncomment, run extension once (reload jira page), comment again.
-  // The main button (git commit message) cannot be changed or removed.
-  //
-  // example 1: no extra buttons (this removes the "No.", "Branch" and "SQL Migration" buttons)
-  //GM_setValue("extraButtons", []);
-  // example 2: remove "SQL Migration" button, add button for "Beer".
-  // GM_setValue("extraButtons", [
-  //     // this section was copied from above (L +-58) as to keep the "default" buttons, deleted "Mig." button.
-  //     { text: "No.", title: "Vorgangnummer kopieren", format: "{0}", icon: svgHash },
-  //     { text: "Branch", title: "git branch name kopieren", format: "feature/{0}", icon: svgGitBranch },
-  //     // here we add an additional button using special text format including tab (\t) and newline (\r\n) characters
-  //     { text: "Sch🍺ga", title: "Mein 🍺format", format: "{0}\t\tBeschreibung: {1}\r\nNächste Zeile, mehr Text 🍺" },
-  // ]);
-  //
-  // if you do not declare an "icon", the "text" will be displayed.
-  // The "text", "title" and "format" fields support emoji.
-  //
-  // Using "GM_setValue" (example above) persists the data even if the userscript is changed or updated.
 
   class CachedTempoApproval {
     /**
@@ -313,15 +292,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   /**
    * Jira issue data object
    * @typedef {object} jiraIssueData
-   * @property {string} title of jira issue
-   * @property {string} jiraNumber id of jira issue
-   * @property {string} prefix either 'fix' or 'feat'
+   * @property {string|undefined} title of jira issue
+   * @property {string|undefined} jiraNumber id of jira issue
+   * @property {'fix'|'feat'|undefined} prefix commit text prefix
    */
   /**
    * Gets the Title, JIRA "Number" (ID, such as SU-1000), and prefix.
-   * @returns {jiraIssueData|undefined} data of current jira issue.
+   * @returns {jiraIssueData} data of current jira issue.
    */
   function getData() {
+    const emptyData = { jiraNumber: undefined, title: undefined, prefix: undefined };
     const issueLink = (
       // backlog view, detail view
       document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]')
@@ -330,9 +310,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     );
     if (!issueLink) {
       GM_log('jira-innosolv-extensions: could not find issueLink.');
-      return;
+      return emptyData;
     }
     const jiraNumber = issueLink.dataset.tooltip || issueLink.innerText;
+    if (!jiraNumber) {
+      GM_log('jira-innosolv-extensions: could not find issue number.');
+      return emptyData;
+    }
 
     const title = (
       // kanban view with details in a modal, standalone view
@@ -340,22 +324,34 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       // backlog view, detail view
       || Array.from(document.querySelectorAll('h1')).pop()
     ).innerText;
-
-    let prefix = 'fix';
-    if (jiraNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
-      prefix = 'feat';
-    } else if (jiraNumber.startsWith('EN')) {
-      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
-      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
-        prefix = 'feat';
-      }
+    if (!title) {
+      GM_log('jira-innosolv-extensions: could not find issue title.');
+      return emptyData;
     }
 
     return {
       jiraNumber,
       title,
-      prefix,
+      prefix: getPrefix(jiraNumber, title),
     };
+  }
+
+  /**
+   * Gets the commit prefix from issue number and issue title
+   * @param {string} issueNumber issue number
+   * @param {string} title issue title
+   * @returns {'feat'|'fix'} commit text prefix
+   */
+  function getPrefix(issueNumber, title) {
+    if (issueNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
+      return 'feat';
+    } else if (issueNumber.startsWith('EN')) {
+      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
+      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
+        return 'feat';
+      }
+    }
+    return 'fix';
   }
 
   /**
@@ -531,10 +527,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     } else {
       node.setAttribute('data-editing-id', id);
       const editDiv = createNode('div', 'editForm');
-      addLabelAndInput(editDiv, 'buttonText', 'Text', buttonDefinition.text);
-      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', buttonDefinition.title, true);
-      addLabelAndInput(editDiv, 'buttonFormat', 'Format', buttonDefinition.format, true);
-      addLabelAndInput(editDiv, 'buttonIcon', 'Icon', buttonDefinition.icon);
+      addLabelAndInput(editDiv, 'buttonText', 'Text', 'Nur wenn Icon leer ist.', buttonDefinition.text);
+      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', undefined, buttonDefinition.title, true);
+      addLabelAndInput(
+        editDiv,
+        'buttonFormat',
+        'Format',
+        '{0}=Vorgang-Nr., {1}=Titel, {2}=Prefix \\t=tab \\r=CR \\n=LF',
+        buttonDefinition.format,
+        true);
+      addLabelAndInput(editDiv, 'buttonIcon', 'Icon', undefined, buttonDefinition.icon);
       const actions = createNode('div', 'buttonrow');
       const save = createNode('button', 'inno-savebtn', 'save changes');
       save.onclick = () => window.alert('not implemented.');
@@ -552,13 +554,24 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {Element} node container to add the label and input to.
    * @param {string} id node id for input element.
    * @param {string} title of the label.
+   * @param {string|undefined} subtitle of the label.
    * @param {string} value of the input element.
    * @param {boolean} specialChars handle special chars like \t \r \n
    */
-  function addLabelAndInput(node, id, title, value, specialChars = false) {
-    const label = createNode('label', undefined, `${title}:`);
-    label.setAttribute('for', id);
-    node.appendChild(label);
+  function addLabelAndInput(node, id, title, subtitle, value, specialChars = false) {
+    if (subtitle === undefined) {
+      const label = createNode('label', undefined, `${title}: `);
+      label.setAttribute('for', id);
+      node.appendChild(label);
+    } else {
+      const label = createNode('label');
+      label.setAttribute('for', id);
+      const labelText = document.createTextNode(`${title}: `);
+      label.appendChild(labelText);
+      const hint = createNode('small', undefined, subtitle);
+      label.appendChild(hint);
+      node.appendChild(label);
+    }
     const input = createNode('input', undefined, undefined, id);
     input.type = 'text';
     input.value = specialChars ? transformSpecialChars(value) : value;
@@ -596,36 +609,18 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     return new Promise((resolve, reject) => {
       try {
         // check migration state
-        if (GM_getValue(persistKeyButtonDefVersion, 1) < 2) {
-          const extraButtons = GM_getValue(persistKeyExtraButtons, defaultExtraButtons);
-          let mustMigrate = false;
-          if (extraButtons.length !== defaultExtraButtons.length) {
-            mustMigrate = true;
-          } else {
-            for (let i = 0; i < extraButtons.length; i++) {
-              const b1 = extraButtons[i];
-              const b2 = defaultExtraButtons[i];
-              if (b1.text !== b2.text || b1.title !== b2.title || b1.format !== b2.format || b1.icon !== b2.icon) {
-                mustMigrate = true;
-              }
-            }
-          }
-          const newButtonsDef = [defaultButton, ...extraButtons];
-          if (mustMigrate) {
-            GM_setValue(persistKeyButtonDef, newButtonsDef);
-          }
+        if (GM_getValue(persistKeyButtonDefVersion, 2) < 2) {
+          // migration to v2 disabled.
           GM_setValue(persistKeyButtonDefVersion, 2);
-          resolve(newButtonsDef);
-        } else {
-          // already migrated, get button definitions.
-          const buttonDefs = GM_getValue(persistKeyButtonDef, [defaultButton, ...defaultExtraButtons]);
-          /** @type {ButtonDefinition[]} */
-          const ret = [];
-          buttonDefs.forEach((e) => {
-            ret.push(new ButtonDefinition(e.text, e.title, e.format, e.icon));
-          });
-          resolve(ret);
         }
+        // already migrated, get button definitions.
+        const buttonDefs = GM_getValue(persistKeyButtonDef, defaultButtons);
+        /** @type {ButtonDefinition[]} */
+        const ret = [];
+        buttonDefs.forEach((e) => {
+          ret.push(new ButtonDefinition(e.text, e.title, e.format, e.icon));
+        });
+        resolve(ret);
       } catch (ex) {
         reject(ex);
       }
@@ -794,7 +789,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         onload: (resp) => {
           if (resp.status == 200) {
             const shortUrl = /^.*?(?=\/|\?|$)/.exec(relativeUrl)[0];
-            GM_log(`fetchData ${performance.now() - start}ms for ${shortUrl}`);
+            GM_log(`fetchData ${Math.round(performance.now() - start)}ms for ${shortUrl}`);
             resolve(resp.response);
           } else {
             if (resp.status == 403 && withToken === undefined) {
@@ -952,8 +947,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             i.appendChild(edit);
           }
           span.appendChild(i);
-          let missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
+          const missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
           span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
+          let missingPercent = 0;
+          if (required > 0) {
+            missingPercent = 100 - Math.min(Math.round(100.0 / required * approvalStatus.logged), 100);
+          }
+          span.style = `--innoprogress:${missingPercent}%;`;
           span.title = (isCurrentWeek ? 'Current week\n' : '') +
             (isTooOld ? 'Do it now‼️\n' : '') +
             `${missing} hours\n` +
@@ -1110,7 +1110,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                   schedule.push(new TempoSchedule(sched.date, sched.requiredSeconds, sched.type));
                 }
                 GM_setValue(persistKeyTempoSchedule, { cache: getYMD(cacheExp), schedule: schedule });
-                GM_log(`getSchedule: Request ${gotResult - start}ms.`);
+                GM_log(`getSchedule: Request ${Math.round(gotResult - start)}ms.`);
                 resolve(schedule);
                 return;
               }
@@ -1246,17 +1246,17 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Checks configuration values for changes, saves configuration and closes the dialog.
    */
   function saveAndCloseInnoExtensionConfigDialog() {
-    let hasChanges = false;
+    let changed = false;
     const integrationEnabledElement = document.getElementById('tempoIntegrationEnabled');
     if (integrationEnabledElement) {
       const currentDisabled = isTempoDisabled();
       const settingDisabled = !integrationEnabledElement.checked;
       if (currentDisabled !== settingDisabled) {
-        hasChanges = true;
+        changed = true;
         setTempoDisabled(settingDisabled);
       }
 
-      if (hasChanges) {
+      if (changed) {
         window.alert('you need to reload the current page for changes to take effect.');
       }
       closeInnoExtensionConfigDialog();
@@ -1460,8 +1460,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {boolean} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
    */
   function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce) {
-    let targetNodes, btargetsFound;
-    targetNodes = document.querySelectorAll(selectorTxt);
+    let btargetsFound;
+    const targetNodes = document.querySelectorAll(selectorTxt);
 
     if (targetNodes && targetNodes.length > 0) {
       btargetsFound = true;
@@ -1482,8 +1482,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
 
     //--- Get the timer-control variable for this selector.
-    let controlObj = waitForKeyElements.controlObj || {};
-    let controlKey = selectorTxt.replace(/[^\w]/g, '_');
+    const controlObj = waitForKeyElements.controlObj || {};
+    const controlKey = selectorTxt.replace(/[^\w]/g, '_');
     let timeControl = controlObj[controlKey];
 
     //--- Now set or clear the timer as appropriate.
