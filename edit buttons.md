@@ -1,17 +1,19 @@
-### edit buttons
+### Buttons bearbeiten
 
-Objekt aktueller Stand behalten für Vergleich
+Objekt ButtonsDefinition aktueller Stand behalten für Vergleich/Zurücksetzen.
 
-Funktionen:
-- Speichern
-- Aktuelle Bearbeitung zurücksetzen
-- Zurücksetzen auf Standard
-- Reihenfolge ändern
-- Button löschen
-- Neuen Button erstellen
+**Funktionen:**
+- [ ] Speichern
+- [ ] Aktuelle Bearbeitung zurücksetzen
+- [ ] Zurücksetzen auf Standard
+- [ ] Reihenfolge ändern
+- [ ] Button löschen
+- [ ] Neuen Button erstellen
 
-- Titel bearbeiten
-- Format bearbeiten
-- Tooltip bearbeiten
-- SVG bearbeiten?
-
+**Bearbeiten:**
+- [ ] Titel bearbeiten
+- [ ] Format bearbeiten
+- [ ] Tooltip bearbeiten
+- [ ] SVG bearbeiten?
+  - [ ] Custom-SVG zulassen? (HTML-Injection möglich)
+  - [ ] Liste verfügbarer SVGs? (Kein Customization möglich)
