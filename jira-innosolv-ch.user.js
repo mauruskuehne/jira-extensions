@@ -121,29 +121,29 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
     'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
     'margin:0 0.43em;}';
-  const tempoStyles = `#${tempoId}{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}` +
-    `#${tempoId} span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;` +
+  const tempoStyles = '#inno-tempo{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}' +
+    '#inno-tempo span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;' +
     'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;' +
     'position:relative;}' +
-    `#${tempoId} a{text-decoration:none;}#${tempoId} a:hover{text-decoration:none;}` +
-    `#${tempoId} > a{color:var(--ds-icon-accent-blue);padding:0.75em;margin:0 0.3em;` +
+    '#inno-tempo a{text-decoration:none;}#inno-tempo a:hover{text-decoration:none;}' +
+    '#inno-tempo > a{color:var(--ds-icon-accent-blue);padding:0.75em;margin:0 0.3em;' +
     'border-radius:0.3em;background:var(--ds-background-neutral);z-index:20;}' +
-    `#${tempoId} > a:hover{color:var(--ds-icon-accent-blue);background:var(--ds-background-neutral-hovered);}` +
-    `#${tempoId} .inno-cursor {cursor:pointer;}` +
-    `#${tempoId} svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}` +
-    `#${tempoId} i.small {font-style:normal;font-size:0.75rem;}` +
-    `#${tempoId} i.small a {font-size:0.6rem;margin-left:0.2rem;}` +
-    `#${tempoId} span.inno-orange{color:var(--ds-text-accent-orange);` +
+    '#inno-tempo > a:hover{color:var(--ds-icon-accent-blue);background:var(--ds-background-neutral-hovered);}' +
+    '#inno-tempo .inno-cursor {cursor:pointer;}' +
+    '#inno-tempo svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}' +
+    '#inno-tempo i.small {font-style:normal;font-size:0.75rem;}' +
+    '#inno-tempo i.small a {font-size:0.6rem;margin-left:0.2rem;}' +
+    '#inno-tempo span.inno-orange{color:var(--ds-text-accent-orange);' +
     'background-color:var(--ds-background-accent-orange-subtler);border-color:var(--ds-border-accent-orange);}' +
-    `#${tempoId} span.inno-red{color:var(--ds-text-accent-red);` +
+    '#inno-tempo span.inno-red{color:var(--ds-text-accent-red);' +
     'background-color:var(--ds-background-accent-red-subtler);border-color:var(--ds-border-accent-red);}' +
-    `#${tempoId} span.inno-yellow{color:var(--ds-text-accent-yellow);` +
+    '#inno-tempo span.inno-yellow{color:var(--ds-text-accent-yellow);' +
     'background-color:var(--ds-background-accent-yellow-subtler);border-color:var(--ds-border-accent-yellow);}' +
     `#${tempoId} span:after{content:" ";display:block;position:absolute;width:100%;top:0;left:0;right:0;` +
     'background:rgba(0,0,0,0.25);height:var(--innoprogress,0%);pointer-events:none;}' +
     `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
-    `#${tempoId} span.inno-refresh:hover{color:var(--ds-icon-accent-blue);` +
+    '#inno-tempo span.inno-refresh:hover{color:var(--ds-icon-accent-blue);' +
     'background:var(--ds-background-neutral-hovered);}';
   const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
     'background:var(--ds-blanket);opacity:1;font-size:12pt;';
@@ -172,13 +172,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '.inno-delbtn{background:var(--ds-background-danger);border:1px solid var(--ds-border-danger);' +
     'color:var(--ds-text-danger);}' +
     '.inno-delbtn:hover{background:var(--ds-background-danger-hovered);}';
-  const configMenuItemStyles = `.${configMenuItemId}{display:flex;box-sizing:border-box;width:100%;min-height:40px;` +
+  const configMenuItemStyles = '.inno-config-lnk{display:flex;box-sizing:border-box;width:100%;min-height:40px;' +
     'margin:0px;padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
     'text-decoration:none;user-select:none;background-color:transparent;color:currentColor;' +
     'cursor:pointer;}' +
-    `.${configMenuItemId}:hover{background-color:var(--ds-background-neutral-subtle-hovered);color:currentColor;` +
+    '.inno-config-lnk:hover{background-color:var(--ds-background-neutral-subtle-hovered);color:currentColor;' +
     'text-decoration:none;}' +
-    `.${configMenuItemId}:focus{background-color:transparent;color:currentColor;text-decoration:none;}`;
+    '.inno-config-lnk:focus{background-color:transparent;color:currentColor;text-decoration:none;}';
 
   const configHelpText1 = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
     'Ablauf=\'365 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen /\n' +
