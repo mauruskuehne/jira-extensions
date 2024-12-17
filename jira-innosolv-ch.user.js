@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.15
+// @version     2.0.16
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -139,9 +139,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'background-color:var(--ds-background-accent-red-subtler);border-color:var(--ds-border-accent-red);}' +
     '#inno-tempo span.inno-yellow{color:var(--ds-text-accent-yellow);' +
     'background-color:var(--ds-background-accent-yellow-subtler);border-color:var(--ds-border-accent-yellow);}' +
-    `#${tempoId} span:after{content:" ";display:block;position:absolute;width:100%;top:0;left:0;right:0;` +
-    'background:rgba(0,0,0,0.25);height:var(--innoprogress,0%);pointer-events:none;}' +
-    `#${tempoId} span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;` +
+    '#inno-tempo span:after{content:" ";display:block;position:absolute;width:100%;top:0;left:0;right:0;' +
+    'background:color-mix(in srgb,color-mix(in srgb,currentColor 70%,var(--ds-surface)) 30%, transparent);' +
+    'height:var(--innoprogress,0%);pointer-events:none;}' +
+    '#inno-tempo span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;' +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     '#inno-tempo span.inno-refresh:hover{color:var(--ds-icon-accent-blue);' +
     'background:var(--ds-background-neutral-hovered);}';
