@@ -105,7 +105,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   ];
 
   /* style definitions */
-  const copyButtonStyles = '.inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0;' +
+  const copyButtonStyles =
+    '.inno-btn{-webkit-box-align:baseline;align-items:baseline;border-width:0;' +
     'border-radius:0.22em;box-sizing:border-box;display:inline-flex;font-size:inherit;font-style:normal;' +
     'font-family:inherit;font-weight:500;max-width:100%;position:relative;text-align:center;text-decoration:none;' +
     'transition:background 0.1s ease-out 0s,box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;' +
@@ -121,7 +122,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '.inno-btn-container{display:inline-flex;overflow:hidden;animation-duration:0.5s;animation-iteration-count:1;' +
     'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
     'margin:0 0.43em;}';
-  const tempoStyles = '#inno-tempo{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}' +
+  const tempoStyles =
+    '#inno-tempo{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}' +
     '#inno-tempo span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;' +
     'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;' +
     'position:relative;}' +
@@ -145,10 +147,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '#inno-tempo span.inno-refresh{cursor:pointer;align-self:flex-start;z-index:10;margin-left:-0.6em;' +
     'color:var(--ds-icon-accent-blue);background:transparent;font-size:0.8em;}' +
     '#inno-tempo span.inno-refresh:hover{color:var(--ds-icon-accent-blue);' +
-    'background:var(--ds-background-neutral-hovered);}';
-  const configDialogBackgroundStyles = 'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
+    'background:var(--ds-background-neutral-hovered);}' +
+    '@media only screen and (max-width:780px) {#inno-tempo{display:none;}}';
+  const configDialogBackgroundStyles =
+    'position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;' +
     'background:var(--ds-blanket);opacity:1;font-size:12pt;';
-  const configDialogStyles = '.inno-dlg{width:500px;position:relative;margin:10% auto;padding:0 20px 20px;' +
+  const configDialogStyles =
+    '.inno-dlg{width:500px;position:relative;margin:10% auto;padding:0 20px 20px;' +
     'background:var(--ds-surface-overlay);border-radius:4px;border:2px solid var(--ds-border-bold);' +
     'color:var(--ds-text);box-shadow:var(--ds-shadow-overlay)}' +
     '.innotitle{font-size:1.6em;padding-top:10px;margin-bottom:1em;}' +
@@ -173,21 +178,22 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '.inno-delbtn{background:var(--ds-background-danger);border:1px solid var(--ds-border-danger);' +
     'color:var(--ds-text-danger);}' +
     '.inno-delbtn:hover{background:var(--ds-background-danger-hovered);}';
-  const configMenuItemStyles = '.inno-config-lnk{display:flex;box-sizing:border-box;width:100%;min-height:40px;' +
+  const configMenuItemStyles =
+    '.inno-config-lnk{display:flex;box-sizing:border-box;width:100%;min-height:40px;' +
     'margin:0px;padding:8px 20px;-webkit-box-align:center;align-items:center;border:0;font-size:14px;outline:0px;' +
     'text-decoration:none;user-select:none;background-color:transparent;color:currentColor;' +
     'cursor:pointer;}' +
     '.inno-config-lnk:hover{background-color:var(--ds-background-neutral-subtle-hovered);color:currentColor;' +
     'text-decoration:none;}' +
     '.inno-config-lnk:focus{background-color:transparent;color:currentColor;text-decoration:none;}';
-
-  const configHelpText1 = 'open tempo settings \n➡ api integration \n➡ new token \n➡ Name=\'jira extension\', ' +
-    'Ablauf=\'365 Tage\', Benutzerdefinierter Zugriff,\n\'Genehmigungsbereich: Genehmigungen anzeigen /\n' +
+  const configHelpText1 =
+    "open tempo settings \n➡ api integration \n➡ new token \n➡ Name='jira extension', " +
+    "Ablauf='365 Tage', Benutzerdefinierter Zugriff,\n'Genehmigungsbereich: Genehmigungen anzeigen /\n" +
     'Bereich für Zeiträume: Zeiträume anzeigen /\nBereich der Schemata: Schemata anzeigen /\n' +
-    'Bereich der Zeitnachweise: Zeitnachweise anzeigen\'\n' +
+    "Bereich der Zeitnachweise: Zeitnachweise anzeigen'\n" +
     '➡ Bestätigen \n➡ Kopieren';
-
-  const couldNotReadUserScheduleText = 'tempo token does not allow reading users schedule information!' +
+  const couldNotReadUserScheduleText =
+    'tempo token does not allow reading users schedule information!' +
     ' -- create new tempo token including schema => "read" access rights and save it in the extensions config dialog.';
 
   class CachedTempoApproval {
@@ -302,13 +308,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {jiraIssueData} data of current jira issue.
    */
   function getData() {
-    const emptyData = { jiraNumber: undefined, title: undefined, prefix: undefined };
-    const issueLink = (
+    const emptyData = {
+      jiraNumber: undefined,
+      title: undefined,
+      prefix: undefined,
+    };
+    const issueLink =
       // backlog view, detail view
-      document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]')
+      document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]') ||
       // kanban view
-      || document.querySelector('.ghx-selected a')
-    );
+      document.querySelector('.ghx-selected a');
     if (!issueLink) {
       GM_log('jira-innosolv-extensions: could not find issueLink.');
       return emptyData;
@@ -319,11 +328,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       return emptyData;
     }
 
-    const title = (
+    const title =
+      (
       // kanban view with details in a modal, standalone view
-      document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]')
+        document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]') ||
       // backlog view, detail view
-      || Array.from(document.querySelectorAll('h1')).pop()
+        Array.from(document.querySelectorAll('h1')).pop()
     ).innerText;
     if (!title) {
       GM_log('jira-innosolv-extensions: could not find issue title.');
@@ -420,7 +430,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         },
         () => {
           flashCopiedMessage.bind(targBtn)(e, false);
-        }
+        },
       );
     } else {
       GM_log('jira-innosolv-extensions: ignoring click, attribute data-format not found.');
@@ -468,7 +478,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         editDialog,
         undefined,
         'Button ist nicht bearbeitbar oder besitzt keine Definition.',
-        targBtn.id);
+        targBtn.id,
+      );
     }
   }
 
@@ -536,7 +547,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         'Format',
         '{0}=Vorgang-Nr., {1}=Titel, {2}=Prefix \\t=tab \\r=CR \\n=LF',
         buttonDefinition.format,
-        true);
+        true,
+      );
       addLabelAndInput(editDiv, 'buttonIcon', 'Icon', undefined, buttonDefinition.icon);
       const actions = createNode('div', 'buttonrow');
       const save = createNode('button', 'inno-savebtn', 'save changes');
@@ -598,7 +610,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   function isIgnoredPath() {
     // disable extension for certain urls (confluence, tempo)
     const path = window.location.pathname;
-    return disabledUrls.some(d => path.startsWith(d));
+    return disabledUrls.some((d) => path.startsWith(d));
   }
 
   /**
@@ -801,7 +813,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           }
         },
         fetch: true,
-      })
+      });
     });
   }
 
@@ -826,16 +838,14 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             if (schedule) {
               resolve(true);
             }
-          }
-          catch (ex) {
+          } catch (ex) {
             resolve(ex);
           }
           resolve(true);
         } else {
           reject('The webservice returned no periods. Check "jiraUserId" in Tampermonkey under "storage"!');
         }
-      }
-      catch (e) {
+      } catch (e) {
         reject(e);
       }
     });
@@ -905,7 +915,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
       /** @type {TempoPeriod|null} */
       let nowPeriod = null;
-      if (now.getDay() == 1 || now.getDay() == 2) { // Mon/Tue => ignore last (current) period.
+      if (now.getDay() == 1 || now.getDay() == 2) {
+        // Mon/Tue => ignore last (current) period.
         periods.pop();
       } else {
         nowPeriod = periods[periods.length - 1];
@@ -925,10 +936,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         const toDate = getDateFromString(p.to);
         const isCurrentWeek = now < toDate;
         const lastUpdate = new Date(approvalStatus.cache);
-        lastUpdate.setTime(lastUpdate.getTime() - (approvalCacheValidForHours * 60 * 60 * 1000));
+        lastUpdate.setTime(lastUpdate.getTime() - approvalCacheValidForHours * 60 * 60 * 1000);
 
         if (approvalStatus.statusKey == 'OPEN') {
-
           // start of period was more than x days ago - and thus should be completed immediately.
           const tooOldDate = new Date();
           tooOldDate.setDate(tooOldDate.getDate() - tempoMarkPeriodTooOldAfterDays);
@@ -937,7 +947,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           const required = await getRequiredTime(approvalStatus.required, useSchedule, nowPeriod, forceUpdate, now);
           const span = createNode('span');
           span.appendChild(
-            document.createTextNode(`${isTooOld ? '❌ ' : ''}${fromDate.getDate()}.${fromDate.getMonth() + 1}.`)
+            document.createTextNode(`${isTooOld ? '❌ ' : ''}${fromDate.getDate()}.${fromDate.getMonth() + 1}.`),
           );
           span.appendChild(createNode('br'));
           const i = createNode('i', 'small');
@@ -948,14 +958,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
             i.appendChild(edit);
           }
           span.appendChild(i);
-          const missing = -(((required - approvalStatus.logged) / 60 / 60).toFixed(2));
-          span.className = getClassForPeriod(isCurrentWeek, isTooOld, (missing > -8));
+          const missing = -((required - approvalStatus.logged) / 60 / 60).toFixed(2);
+          span.className = getClassForPeriod(isCurrentWeek, isTooOld, missing > -8);
           let missingPercent = 0;
           if (required > 0) {
-            missingPercent = 100 - Math.min(Math.round(100.0 / required * approvalStatus.logged), 100);
+            missingPercent = 100 - Math.min(Math.round((100.0 / required) * approvalStatus.logged), 100);
           }
           span.style = `--innoprogress:${missingPercent}%;`;
-          span.title = (isCurrentWeek ? 'Current week\n' : '') +
+          span.title =
+            (isCurrentWeek ? 'Current week\n' : '') +
             (isTooOld ? 'Do it now‼️\n' : '') +
             `${missing} hours\n` +
             `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
@@ -971,7 +982,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           edit.href = `${tempoEditLink}${getYMD(fromDate)}`;
           i.appendChild(edit);
           span.appendChild(i);
-          span.title = `Error!\n${approvalStatus.errorText}\n` +
+          span.title =
+            `Error!\n${approvalStatus.errorText}\n` +
             `Updated: ${lZero(lastUpdate.getHours())}:${lZero(lastUpdate.getMinutes())}`;
           node.appendChild(span);
         }
@@ -988,7 +1000,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
     const refresh = createNode('span', 'inno-refresh', undefined, undefined, 'force update');
     refresh.innerHTML = svgRefresh;
-    refresh.onclick = () => { getTempoData(node, true); };
+    refresh.onclick = () => {
+      getTempoData(node, true);
+    };
     node.appendChild(refresh);
   }
 
@@ -1003,10 +1017,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       method: 'GET',
       url: `${tempoBaseUrl}${relativeUrl}`,
       headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${(withToken ? withToken : GM_getValue(persistKeyTempoToken, ''))}`
+        Accept: 'application/json',
+        Authorization: `Bearer ${withToken ? withToken : GM_getValue(persistKeyTempoToken, '')}`,
       },
-      responseType: 'json'
+      responseType: 'json',
     };
   }
 
@@ -1018,7 +1032,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @returns {Promise<TempoPeriod[]>} tempo periods within the past month.
    */
   async function getTempoPeriods(now, forceUpdate, withToken) {
-    const cachedPeriods = GM_getValue(persistKeyTempoPeriods, { cache: getYMD(now), periods: [] });
+    const cachedPeriods = GM_getValue(persistKeyTempoPeriods, {
+      cache: getYMD(now),
+      periods: [],
+    });
     const cachedDate = new Date(cachedPeriods.cache);
     if (cachedDate > now && !withToken && !forceUpdate) {
       /** @type {TempoPeriod[]} */
@@ -1042,7 +1059,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         const period = result.periods[i];
         periods.push(new TempoPeriod(period.from, period.to));
       }
-      GM_setValue(persistKeyTempoPeriods, { cache: getYMD(cacheExp), periods: periods });
+      GM_setValue(persistKeyTempoPeriods, {
+        cache: getYMD(cacheExp),
+        periods: periods,
+      });
       return periods;
     }
   }
@@ -1083,7 +1103,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       if (!getTempoTokenAllowsSchedule() && !forceUpdate) {
         reject(couldNotReadUserScheduleText);
       }
-      const cachedSchedule = GM_getValue(persistKeyTempoSchedule, { cache: getYMD(now), schedule: [] });
+      const cachedSchedule = GM_getValue(persistKeyTempoSchedule, {
+        cache: getYMD(now),
+        schedule: [],
+      });
       const cachedDate = new Date(cachedSchedule.cache);
       if (cachedDate > now && !forceUpdate) {
         /** @type {TempoSchedule[]} */
@@ -1110,7 +1133,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
                   const sched = resp.response.results[i];
                   schedule.push(new TempoSchedule(sched.date, sched.requiredSeconds, sched.type));
                 }
-                GM_setValue(persistKeyTempoSchedule, { cache: getYMD(cacheExp), schedule: schedule });
+                GM_setValue(persistKeyTempoSchedule, {
+                  cache: getYMD(cacheExp),
+                  schedule: schedule,
+                });
                 GM_log(`getSchedule: Request ${Math.round(gotResult - start)}ms.`);
                 resolve(schedule);
                 return;
@@ -1122,7 +1148,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               }
             }
             reject(resp);
-          }
+          },
         });
       }
     });
@@ -1178,29 +1204,23 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       }
     }
     const cacheExp = new Date();
-    cacheExp.setTime(cacheExp.getTime() + (approvalCacheValidForHours * 60 * 60 * 1000));
+    cacheExp.setTime(cacheExp.getTime() + approvalCacheValidForHours * 60 * 60 * 1000);
 
     try {
       const result = await fetchData(
-        `timesheet-approvals/user/${GM_getValue(persistKeyJiraUser, '')}?from=${period.from}&to=${period.to}`
+        `timesheet-approvals/user/${GM_getValue(persistKeyJiraUser, '')}?from=${period.from}&to=${period.to}`,
       );
       const ret = new CachedTempoApproval(
         cacheExp.toISOString(),
         result.requiredSeconds,
         result.timeSpentSeconds,
         result.status.key,
-        null
+        null,
       );
       saveApprovalStatus(fromKey, ret);
       return ret;
     } catch (e) {
-      const ret = new CachedTempoApproval(
-        cacheExp.toISOString(),
-        0,
-        0,
-        'ERROR',
-        e
-      );
+      const ret = new CachedTempoApproval(cacheExp.toISOString(), 0, 0, 'ERROR', e);
       saveApprovalStatus(fromKey, ret);
       return ret;
     }
@@ -1341,7 +1361,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         'div',
         tempoDisabled ? 'inno-hidden' : undefined,
         undefined,
-        extConfigDialogTempoDetailsId
+        extConfigDialogTempoDetailsId,
       );
       const lbl = createNode('label', 'inno-margintop', 'Tempo API Token:');
       lbl.setAttribute('for', 'tempoTokenInput');
@@ -1388,7 +1408,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
               inp.classList.add('is-invalid');
             }
           } else {
-            throw ('tempoTokenInput could not be found in DOM!');
+            throw 'tempoTokenInput could not be found in DOM!';
           }
         } catch (e) {
           GM_log(`check and save tempo data, onClick: Exception ${e}`);
@@ -1477,8 +1497,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           }
         }
       });
-    }
-    else {
+    } else {
       btargetsFound = false;
     }
 
@@ -1492,8 +1511,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       //--- The only condition where we need to clear the timer.
       clearInterval(timeControl);
       delete controlObj[controlKey];
-    }
-    else {
+    } else {
       //--- Set a timer, if needed.
       if (!timeControl) {
         timeControl = setInterval(() => {
