@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.16
+// @version     2.0.17
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -696,15 +696,18 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       return;
     }
 
+    const workNode = node.parentElement;
     if (!document.getElementById(tempoId)) {
-      node.appendChild(createNode('style', undefined, tempoStyles));
+      workNode.appendChild(createNode('style', undefined, tempoStyles));
 
       const span = createNode('span', undefined, 'innoTempo…', tempoId, 'innoTempo: initializing…');
-      node.appendChild(span);
+      workNode.appendChild(span);
       if (tempoUpdateTimer) {
         clearTimeout(tempoUpdateTimer);
       }
-      tempoUpdateTimer = setTimeout(() => { updateTempo(span); }, tempoUpdateDelayMs);
+      tempoUpdateTimer = setTimeout(() => {
+        updateTempo(span);
+      }, tempoUpdateDelayMs);
     }
   }
 
@@ -1452,7 +1455,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       return;
     }
     const headerText = node.innerText.toUpperCase();
-    if (headerText == 'KONTO' || headerText == 'ACCOUNT') {
+    if (headerText == 'PROFIL' || headerText == 'PROFILE') {
       if (!document.getElementById(configMenuItemId)) {
         const parent = node.parentNode;
         parent.appendChild(createNode('style', undefined, configMenuItemStyles));
@@ -1461,11 +1464,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         lnk.onclick = showInnoExtensionConfigDialog;
         parent.appendChild(lnk);
       }
-    } else if (headerText == 'JIRA') {
       if (GM_getValue(persistKeyJiraUser, '') == '') {
-        const link = node.nextSibling.querySelector('a[href^="/jira/people/');
+        const link = node.href;
         let match;
-        if (link && link.href && (match = /\/jira\/people\/([0-9a-f]+)$/.exec(link.href))) {
+        if (link && (match = /\/jira\/people\/([0-9a-f]+)$/.exec(link))) {
           GM_setValue(persistKeyJiraUser, match[1]);
         }
       }
@@ -1530,11 +1532,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   waitForKeyElements(actionSelector, addCopyButtons, false);
 
   // config menu for jira extension
-  const configMenuSelector = 'div[data-ds--menu--heading-item="true"]';
+  const configMenuSelector = 'a[data-testid="atlassian-navigation--secondary-actions--profile--content--view-profile"]';
   waitForKeyElements(configMenuSelector, addInnoExtensionConfigMenuItem, false);
   // tempo integration
   if (!isTempoDisabled()) {
-    const createButtonSelector = 'div[data-testid="create-button-wrapper"]';
+    const createButtonSelector = 'button[data-testid="atlassian-navigation--create-button"]';
     waitForKeyElements(createButtonSelector, addTempoIntegration, false);
   }
 })();
