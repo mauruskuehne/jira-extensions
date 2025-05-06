@@ -123,13 +123,13 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'animation-name:none;animation-timing-function:linear;white-space:nowrap;text-overflow:ellipsis;' +
     'margin:0 0.43em;}';
   const tempoStyles =
-    '#inno-tempo{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;}' +
-    '#inno-tempo span{display:inline-block;padding:0.16em;margin:0 0.16em;border-radius:0.3em;z-index:20;' +
-    'line-height:1.2em;color:var(--ds-text);border:0.16em solid transparent;cursor:default;text-align:center;' +
+    '#inno-tempo{margin-left:8px;display:inline-flex;place-items:center;font-size:10pt;vertical-align:middle;}' +
+    '#inno-tempo span{display:inline-block;padding:0.1em;margin:0 0.16em;border-radius:0.2em;z-index:20;' +
+    'line-height:0.9em;color:var(--ds-text);border:0.1em solid transparent;cursor:default;text-align:center;' +
     'position:relative;}' +
     '#inno-tempo a{text-decoration:none;}#inno-tempo a:hover{text-decoration:none;}' +
-    '#inno-tempo > a{color:var(--ds-icon-accent-blue);padding:0.75em;margin:0 0.3em;' +
-    'border-radius:0.3em;background:var(--ds-background-neutral);z-index:20;}' +
+    '#inno-tempo > a{color:var(--ds-icon-accent-blue);padding:0.5em;margin:0 0.3em;' +
+    'border-radius:0.2em;background:var(--ds-background-neutral);z-index:20;}' +
     '#inno-tempo > a:hover{color:var(--ds-icon-accent-blue);background:var(--ds-background-neutral-hovered);}' +
     '#inno-tempo .inno-cursor {cursor:pointer;}' +
     '#inno-tempo svg{vertical-align:text-bottom;fill:currentColor;max-width:1.35em;max-height:1.35em;}' +
