@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.17
+// @version     2.0.18
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -81,26 +81,45 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   github repo:
   https://github.com/atisawd/boxicons/tree/master/svg/regular
   */
-  const svgMessageAltEdit = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.586 18 12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h3.586zM5 4h14v12h-4.414L12 18.586 9.414 16H5V4z"/><path d="m12.479 7.219-4.977 4.969v1.799h1.8l4.975-4.969zm2.219-2.22 1.8 1.8-1.37 1.37-1.8-1.799z"/></svg>';
-  const svgHash = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.018 3.815 15.232 8h-4.966l.716-3.815-1.964-.37L8.232 8H4v2h3.857l-.751 4H3v2h3.731l-.714 3.805 1.965.369L8.766 16h4.966l-.714 3.805 1.965.369.783-4.174H20v-2h-3.859l.751-4H21V8h-3.733l.716-3.815-1.965-.37zM14.106 14H9.141l.751-4h4.966l-.752 4z"/></svg>';
-  const svgGitBranch = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 4C15.57 4 14 5.57 14 7.5c0 1.554 1.025 2.859 2.43 3.315-.146.932-.547 1.7-1.23 2.323-1.946 1.773-5.527 1.935-7.2 1.907V8.837c1.44-.434 2.5-1.757 2.5-3.337C10.5 3.57 8.93 2 7 2S3.5 3.57 3.5 5.5c0 1.58 1.06 2.903 2.5 3.337v6.326c-1.44.434-2.5 1.757-2.5 3.337C3.5 20.43 5.07 22 7 22s3.5-1.57 3.5-3.5c0-.551-.14-1.065-.367-1.529 2.06-.186 4.657-.757 6.409-2.35 1.097-.997 1.731-2.264 1.904-3.768C19.915 10.438 21 9.1 21 7.5 21 5.57 19.43 4 17.5 4zm-12 1.5C5.5 4.673 6.173 4 7 4s1.5.673 1.5 1.5S7.827 7 7 7s-1.5-.673-1.5-1.5zM7 20c-.827 0-1.5-.673-1.5-1.5a1.5 1.5 0 0 1 1.482-1.498l.13.01A1.495 1.495 0 0 1 7 20zM17.5 9c-.827 0-1.5-.673-1.5-1.5S16.673 6 17.5 6s1.5.673 1.5 1.5S18.327 9 17.5 9z"/></svg>';
-  const svgData = '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
-  const svgTempo = '<svg width="18px" height="18px" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M9 2.02a6.98 6.98 0 1 1 0 13.96A6.98 6.98 0 0 1 9 2.02M9 18A9 9 0 1 0 9 0a9 9 0 0 0 0 18"/><path d="M11.2 6.07 8.32 8.73c-.1.09-.26.09-.36 0L6.8 7.63a.27.27 0 0 0-.36 0L5.07 8.89c-.1.1-.1.24 0 .33L8 11.93c.1.1.26.1.36 0l4.58-4.25c.1-.1.1-.24 0-.33l-1.38-1.28a.27.27 0 0 0-.36 0"/></g></svg>';
-  const svgRefresh = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 11H7.101l.001-.009a4.956 4.956 0 0 1 .752-1.787 5.054 5.054 0 0 1 2.2-1.811c.302-.128.617-.226.938-.291a5.078 5.078 0 0 1 2.018 0 4.978 4.978 0 0 1 2.525 1.361l1.416-1.412a7.036 7.036 0 0 0-2.224-1.501 6.921 6.921 0 0 0-1.315-.408 7.079 7.079 0 0 0-2.819 0 6.94 6.94 0 0 0-1.316.409 7.04 7.04 0 0 0-3.08 2.534 6.978 6.978 0 0 0-1.054 2.505c-.028.135-.043.273-.063.41H2l4 4 4-4zm4 2h2.899l-.001.008a4.976 4.976 0 0 1-2.103 3.138 4.943 4.943 0 0 1-1.787.752 5.073 5.073 0 0 1-2.017 0 4.956 4.956 0 0 1-1.787-.752 5.072 5.072 0 0 1-.74-.61L7.05 16.95a7.032 7.032 0 0 0 2.225 1.5c.424.18.867.317 1.315.408a7.07 7.07 0 0 0 2.818 0 7.031 7.031 0 0 0 4.395-2.945 6.974 6.974 0 0 0 1.053-2.503c.027-.135.043-.273.063-.41H22l-4-4-4 4z"/></svg>';
-  const svgInfoCircle = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M11 11h2v6h-2zm0-4h2v2h-2z"/></svg>';
+  const svgMessageAltEdit =
+    '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.586 18 12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h3.586zM5 4h14v12h-4.414L12 18.586 9.414 16H5V4z"/><path d="m12.479 7.219-4.977 4.969v1.799h1.8l4.975-4.969zm2.219-2.22 1.8 1.8-1.37 1.37-1.8-1.799z"/></svg>';
+  const svgHash =
+    '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.018 3.815 15.232 8h-4.966l.716-3.815-1.964-.37L8.232 8H4v2h3.857l-.751 4H3v2h3.731l-.714 3.805 1.965.369L8.766 16h4.966l-.714 3.805 1.965.369.783-4.174H20v-2h-3.859l.751-4H21V8h-3.733l.716-3.815-1.965-.37zM14.106 14H9.141l.751-4h4.966l-.752 4z"/></svg>';
+  const svgGitBranch =
+    '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 4C15.57 4 14 5.57 14 7.5c0 1.554 1.025 2.859 2.43 3.315-.146.932-.547 1.7-1.23 2.323-1.946 1.773-5.527 1.935-7.2 1.907V8.837c1.44-.434 2.5-1.757 2.5-3.337C10.5 3.57 8.93 2 7 2S3.5 3.57 3.5 5.5c0 1.58 1.06 2.903 2.5 3.337v6.326c-1.44.434-2.5 1.757-2.5 3.337C3.5 20.43 5.07 22 7 22s3.5-1.57 3.5-3.5c0-.551-.14-1.065-.367-1.529 2.06-.186 4.657-.757 6.409-2.35 1.097-.997 1.731-2.264 1.904-3.768C19.915 10.438 21 9.1 21 7.5 21 5.57 19.43 4 17.5 4zm-12 1.5C5.5 4.673 6.173 4 7 4s1.5.673 1.5 1.5S7.827 7 7 7s-1.5-.673-1.5-1.5zM7 20c-.827 0-1.5-.673-1.5-1.5a1.5 1.5 0 0 1 1.482-1.498l.13.01A1.495 1.495 0 0 1 7 20zM17.5 9c-.827 0-1.5-.673-1.5-1.5S16.673 6 17.5 6s1.5.673 1.5 1.5S18.327 9 17.5 9z"/></svg>';
+  const svgData =
+    '<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 17V7c0-2.168-3.663-4-8-4S4 4.832 4 7v10c0 2.168 3.663 4 8 4s8-1.832 8-4zM12 5c3.691 0 5.931 1.507 6 1.994C17.931 7.493 15.691 9 12 9S6.069 7.493 6 7.006C6.069 6.507 8.309 5 12 5zM6 9.607C7.479 10.454 9.637 11 12 11s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2V9.607zM6 17v-2.393C7.479 15.454 9.637 16 12 16s4.521-.546 6-1.393v2.387c-.069.499-2.309 2.006-6 2.006s-5.931-1.507-6-2z"/></svg>';
+  const svgTempo =
+    '<svg width="18px" height="18px" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M9 2.02a6.98 6.98 0 1 1 0 13.96A6.98 6.98 0 0 1 9 2.02M9 18A9 9 0 1 0 9 0a9 9 0 0 0 0 18"/><path d="M11.2 6.07 8.32 8.73c-.1.09-.26.09-.36 0L6.8 7.63a.27.27 0 0 0-.36 0L5.07 8.89c-.1.1-.1.24 0 .33L8 11.93c.1.1.26.1.36 0l4.58-4.25c.1-.1.1-.24 0-.33l-1.38-1.28a.27.27 0 0 0-.36 0"/></g></svg>';
+  const svgRefresh =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 11H7.101l.001-.009a4.956 4.956 0 0 1 .752-1.787 5.054 5.054 0 0 1 2.2-1.811c.302-.128.617-.226.938-.291a5.078 5.078 0 0 1 2.018 0 4.978 4.978 0 0 1 2.525 1.361l1.416-1.412a7.036 7.036 0 0 0-2.224-1.501 6.921 6.921 0 0 0-1.315-.408 7.079 7.079 0 0 0-2.819 0 6.94 6.94 0 0 0-1.316.409 7.04 7.04 0 0 0-3.08 2.534 6.978 6.978 0 0 0-1.054 2.505c-.028.135-.043.273-.063.41H2l4 4 4-4zm4 2h2.899l-.001.008a4.976 4.976 0 0 1-2.103 3.138 4.943 4.943 0 0 1-1.787.752 5.073 5.073 0 0 1-2.017 0 4.956 4.956 0 0 1-1.787-.752 5.072 5.072 0 0 1-.74-.61L7.05 16.95a7.032 7.032 0 0 0 2.225 1.5c.424.18.867.317 1.315.408a7.07 7.07 0 0 0 2.818 0 7.031 7.031 0 0 0 4.395-2.945 6.974 6.974 0 0 0 1.053-2.503c.027-.135.043-.273.063-.41H22l-4-4-4 4z"/></svg>';
+  const svgInfoCircle =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M11 11h2v6h-2zm0-4h2v2h-2z"/></svg>';
 
   const defaultButtons = [
     {
-      text: 'Msg', title: 'git commit Nachricht kopieren', format: '{2}: {1} [{0}]', icon: svgMessageAltEdit,
+      text: 'Msg',
+      title: 'git commit Nachricht kopieren',
+      format: '{2}: {1} [{0}]',
+      icon: svgMessageAltEdit,
     },
     {
-      text: 'No.', title: 'Vorgangnummer kopieren', format: '{0}', icon: svgHash,
+      text: 'No.',
+      title: 'Vorgangnummer kopieren',
+      format: '{0}',
+      icon: svgHash,
     },
     {
-      text: 'Branch', title: 'git branch Name kopieren', format: 'feature/{0}', icon: svgGitBranch,
+      text: 'Branch',
+      title: 'git branch Name kopieren',
+      format: 'feature/{0}',
+      icon: svgGitBranch,
     },
     {
-      text: 'Mig.', title: 'SQL Migration kopieren', format: '{0} {1}', icon: svgData,
+      text: 'Mig.',
+      title: 'SQL Migration kopieren',
+      format: '{0} {1}',
+      icon: svgData,
     },
   ];
 
@@ -113,7 +132,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     'white-space:nowrap;background:var(--ds-background-neutral);cursor:pointer;height:2.286em;line-height:2.286em;' +
     'padding:0 0.36em;vertical-align:middle;width:auto;-webkit-box-pack:center;justify-content:center;' +
     'color:var(--ds-icon-accent-blue);border:0.1em solid transparent;}' +
-    '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;}' +
+    '.inno-btn svg{vertical-align:text-bottom;width:1.36em;height:auto;fill:currentColor;pointer-events:none}' +
     '.inno-btn:hover{background:var(--ds-background-neutral-hovered);text-decoration:inherit;' +
     'transition-duration:0s, 0.15s;color:var(--ds-icon-accent-blue);}' +
     '.inno-btn:focus{background:var(--ds-background-neutral);box-shadow:none;transition-duration:0s,0.2s;' +
@@ -168,7 +187,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     '.inno-hidden{display:none;}' +
     '.inno-margintop{margin-top:1em;}' +
     '.is-invalid{border:2px solid var(--ds-border-danger);}' +
-    '.bigger{font-size:20pt;}' +
+    '.bigger{font-size:20pt;margin-bottom:0.2rem;}' +
     'button{margin-right:10px;padding:10px;background:var(--ds-background-input);cursor:pointer;border-radius:4px;' +
     'border:1px solid var(--ds-border-input);}' +
     'button:hover{background:var(--ds-background-input-hovered);}' +
@@ -270,8 +289,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       this.format = format;
       /** @type {string} */
       this.icon = icon;
+      /** @type {string} */
+      this.id = crypto.randomUUID();
     }
   }
+
+  /**
+   * Aktuell bearbeitete Liste von ButtonDefinition.
+   * @type {ButtonDefinition[]}
+   */
+  let buttonDefinitionEdit = [];
 
   /**
    * Momentarily changes button background to green/red, to inform the user of the result of the process.
@@ -328,12 +355,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       return emptyData;
     }
 
-    const title =
-      (
-      // kanban view with details in a modal, standalone view
-        document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]') ||
-      // backlog view, detail view
-        Array.from(document.querySelectorAll('h1')).pop()
+    // 1. kanban view with details in a modal, standalone view // 2. backlog view, detail view
+    const title = (
+      document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]') ||
+      Array.from(document.querySelectorAll('h1')).pop()
     ).innerText;
     if (!title) {
       GM_log('jira-innosolv-extensions: could not find issue title.');
@@ -381,7 +406,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * Gets the parent node with nodeName == @name
+   * Gets the parent node with nodeName == `@name`
    * @param {Element} node to search parent
    * @param {string} name what to search for
    * @param {number} search current search depth
@@ -466,21 +491,33 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       GM_log('jira-innosolv-extensions: edit dialog is not open, ignoring PREVIEW click.');
     }
     // clear 'editing' class from all buttons, add class to currently clicked button
-    if (targBtn.hasAttribute('data-buttondef')) {
+    if (targBtn.hasAttribute('data-buttondefid')) {
       setClassAndRemoveFromSiblings(targBtn, 'editing');
     }
-    if (targBtn.hasAttribute('data-buttondef')) {
-      const buttonDef = JSON.parse(targBtn.getAttribute('data-buttondef'));
-
-      makeButtonEditForm(editDialog, buttonDef, undefined, targBtn.id);
+    if (targBtn.hasAttribute('data-buttondefid')) {
+      const buttonDef = getButtonDefinitionById(targBtn.getAttribute('data-buttondefid'));
+      makeButtonEditForm(editDialog, buttonDef);
     } else {
-      makeButtonEditForm(
-        editDialog,
-        undefined,
-        'Button ist nicht bearbeitbar oder besitzt keine Definition.',
-        targBtn.id,
-      );
+      makeButtonEditForm(editDialog, 'Button ist nicht bearbeitbar oder besitzt keine Definition.');
     }
+  }
+
+  /**
+   * Deletes a button definition from buttonDefinitionEdit and updates preview buttons.
+   * @param {string} buttonId button definition to delete.
+   */
+  function deleteButtonDefinition(buttonId) {
+    buttonDefinitionEdit = buttonDefinitionEdit.filter((b) => b.id !== buttonId);
+    updatePreviewButtons();
+  }
+
+  /**
+   * Gets button definition from buttonDefinitionEdit by id.
+   * @param {string} id button id
+   * @returns {ButtonDefinition} buttonDefinition with id
+   */
+  function getButtonDefinitionById(id) {
+    return buttonDefinitionEdit.find((b) => b.id == id);
   }
 
   /**
@@ -510,21 +547,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * Button definition
-   * @typedef {object} buttonDefinition
-   * @property {string} text to display on button, if @icon is not set
-   * @property {string} title (tooltip) of button
-   * @property {string} format of text to copy
-   * @property {string|undefined} icon to diaplay, text if undefined.
-   */
-  /**
    * Creates an edit form for a custom button.
    * @param {Element} node container to add the edit form or error message to.
-   * @param {buttonDefinition|undefined} buttonDefinition definition of button.
-   * @param {string|undefined} message error message to display.
-   * @param {string|undefined} id of active button.
+   * @param {ButtonDefinition|string} buttonDefinition definition of button, or error message string.
    */
-  function makeButtonEditForm(node, buttonDefinition, message, id) {
+  function makeButtonEditForm(node, buttonDefinition) {
     // clean edit dialog children
     while (node.firstChild) {
       node.removeChild(node.lastChild);
@@ -532,15 +559,37 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (node.hasAttribute('data-editing-id')) {
       node.removeAttribute('data-editing-id');
     }
-    if (message) {
+    if (typeof buttonDefinition == 'string') {
       const errDiv = createNode('div', 'is-error');
-      errDiv.appendChild(createNode('p', undefined, message));
+      errDiv.appendChild(createNode('p', undefined, buttonDefinition));
       node.appendChild(errDiv);
     } else {
-      node.setAttribute('data-editing-id', id);
+      node.setAttribute('data-editing-id', buttonDefinition.id);
       const editDiv = createNode('div', 'editForm');
-      addLabelAndInput(editDiv, 'buttonText', 'Text', 'Nur wenn Icon leer ist.', buttonDefinition.text);
-      addLabelAndInput(editDiv, 'buttonTitle', 'Titel', undefined, buttonDefinition.title, true);
+      addLabelAndInput(
+        editDiv,
+        'buttonText',
+        'Text',
+        'Nur wenn Icon leer ist.',
+        buttonDefinition.text,
+        false,
+        buttonDefinition.id,
+        (btnDef, newVal) => {
+          btnDef.text = newVal;
+        },
+      );
+      addLabelAndInput(
+        editDiv,
+        'buttonTitle',
+        'Titel',
+        undefined,
+        buttonDefinition.title,
+        true,
+        buttonDefinition.id,
+        (btnDef, newVal) => {
+          btnDef.title = newVal;
+        },
+      );
       addLabelAndInput(
         editDiv,
         'buttonFormat',
@@ -548,14 +597,29 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         '{0}=Vorgang-Nr., {1}=Titel, {2}=Prefix \\t=tab \\r=CR \\n=LF',
         buttonDefinition.format,
         true,
+        buttonDefinition.id,
+        (btnDef, newVal) => {
+          btnDef.format = newVal;
+        },
       );
-      addLabelAndInput(editDiv, 'buttonIcon', 'Icon', undefined, buttonDefinition.icon);
+      addLabelAndInput(
+        editDiv,
+        'buttonIcon',
+        'Icon',
+        undefined,
+        buttonDefinition.icon,
+        false,
+        buttonDefinition.id,
+        (btnDef, newVal) => {
+          btnDef.icon = newVal;
+        },
+      );
       const actions = createNode('div', 'buttonrow');
       const save = createNode('button', 'inno-savebtn', 'save changes');
       save.onclick = () => window.alert('not implemented.');
       actions.appendChild(save);
       const del = createNode('button', 'inno-delbtn', 'delete');
-      del.onclick = () => window.alert('not implemented.');
+      del.onclick = () => deleteButtonDefinition(buttonDefinition.id);
       actions.appendChild(del);
       editDiv.appendChild(actions);
       node.appendChild(editDiv);
@@ -570,8 +634,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * @param {string|undefined} subtitle of the label.
    * @param {string} value of the input element.
    * @param {boolean} specialChars handle special chars like \t \r \n
+   * @param {string} buttonDefId button definition id
+   * @param {(btnDef:ButtonDefinition, newValue:string) => void} onChangeFn onChange function
    */
-  function addLabelAndInput(node, id, title, subtitle, value, specialChars = false) {
+  function addLabelAndInput(node, id, title, subtitle, value, specialChars, buttonDefId, onChangeFn) {
     if (subtitle === undefined) {
       const label = createNode('label', undefined, `${title}: `);
       label.setAttribute('for', id);
@@ -585,22 +651,38 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       label.appendChild(hint);
       node.appendChild(label);
     }
+    /** @type {HTMLInputElement} */
     const input = createNode('input', undefined, undefined, id);
     input.type = 'text';
     input.value = specialChars ? transformSpecialChars(value) : value;
+    input.onchange = (e) => {
+      const buttonDef = getButtonDefinitionById(buttonDefId);
+      const newValue = specialChars ? revTransformSpecialChars(e.target.value) : e.target.value;
+      onChangeFn(buttonDef, newValue);
+    };
     node.appendChild(input);
   }
 
   /**
-   * transforms special characters like \t \r or \n back to readable/editable characters.
+   * transforms special characters like \t \r or \n to readable/editable characters.
    * @param {string} value string containing original value including tab and line-feed characters.
    * @returns {string} formatted value with readable tab and line-feed characters.
    */
   function transformSpecialChars(value) {
-    let ret = value.split('\t').join('\\t');
-    ret = ret.split('\r').join('\\r');
-    ret = ret.split('\n').join('\\n');
-    return ret;
+    const tab = value.split('\t').join('\\t');
+    const cr = tab.split('\r').join('\\r');
+    return cr.split('\n').join('\\n');
+  }
+
+  /**
+   * reverses transform of editable characters like \\t \\r or \\n back to special characters (see above).
+   * @param {string} value string containing readable tab and line-feed characters.
+   * @returns {string} formatted value with special tab and line-feed characters.
+   */
+  function revTransformSpecialChars(value) {
+    const tab = value.split('\\t').join('\t');
+    const cr = tab.split('\\r').join('\r');
+    return cr.split('\\n').join('\n');
   }
 
   /**
@@ -657,7 +739,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
     btn.appendChild(lbl);
     if (preview) {
-      btn.setAttribute('data-buttondef', JSON.stringify(buttondef));
+      // drag and drop
+      btn.setAttribute('draggable', 'true');
+      btn.ondragend = dragEnd;
+      btn.ondragover = dragOver;
+      btn.ondragstart = dragStart;
+      btn.setAttribute('data-buttondefid', buttondef.id);
       btn.onclick = buttonClickedPreview; // onclick function for preview window
     } else {
       btn.onclick = buttonClicked; // onclick function
@@ -680,11 +767,32 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       node.appendChild(createNode('style', undefined, copyButtonStyles));
       const container = createNode('div', 'inno-btn-container', undefined, buttonsId);
       const buttons = await getButtonDefinitions();
+      buttonDefinitionEdit = preview ? buttons : [];
       buttons.forEach((btn) => {
         container.appendChild(createButton(btn, preview));
       });
       node.appendChild(container);
     }
+  }
+
+  /**
+   * Updates preview buttons according to buttonDefinitionEdit.
+   */
+  function updatePreviewButtons() {
+    const prevNode = document.getElementById(innoButtonPreviewId);
+    if (!prevNode) {
+      return;
+    }
+    // clear preview buttons
+    while (prevNode.firstChild) {
+      prevNode.removeChild(prevNode.lastChild);
+    }
+    buttonDefinitionEdit.forEach((btn) => {
+      prevNode.appendChild(createButton(btn, true));
+    });
+
+    const editDialog = document.getElementById(extConfigDialogEditButtonId);
+    makeButtonEditForm(editDialog, 'Kein Button ausgewählt.');
   }
 
   /**
@@ -795,7 +903,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * Fetches data from tempo API.
    * @param {string} relativeUrl relative URL.
    * @param {string|undefined} withToken use specific token.
-   * @returns {Promise<any>} data.
+   * @returns {Promise<unknown>} data.
    */
   function fetchData(relativeUrl, withToken) {
     return new Promise((resolve, reject) => {
@@ -810,7 +918,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
           } else {
             if (resp.status == 403 && withToken === undefined) {
               // unauthorized => token invalid or expired.
-              reject("fetchData: Error 403 Unauthorized. Check your token!");
+              reject('fetchData: Error 403 Unauthorized. Check your token!');
             }
             reject(resp.status);
           }
@@ -1479,7 +1587,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
    * A utility function for Greasemonkey scripts, to detect and handle AJAXed content.
    * Forked for use without JQuery.
    * @param {string} selectorTxt jQuery selector that specifies the desired element(s).
-   * @param {Function} actionFunction code to run when elements are found. It is passed as node to the matched element.
+   * @param {(node: Element) => void} actionFunction code to run when elements are found. It is passed as node to the matched element.
    * @param {boolean} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
    */
   function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce) {
@@ -1538,5 +1646,74 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   if (!isTempoDisabled()) {
     const createButtonSelector = 'button[data-testid="atlassian-navigation--create-button"]';
     waitForKeyElements(createButtonSelector, addTempoIntegration, false);
+  }
+
+  // drag and drop functions
+  // source: https://codepen.io/crouchingtigerhiddenadam/pen/qKXgap
+  /**
+   * @type {Element|null} dragged node
+   */
+  let selected = null;
+
+  /**
+   * Drag and drop: drag over.
+   * @param {DragEvent} e DragOver event.
+   */
+  function dragOver(e) {
+    // ignore drop targets that are not siblings.
+    if (e.target.nodeName !== selected.nodeName) {
+      return;
+    }
+    if (isBefore(selected, e.target)) {
+      e.target.parentNode.insertBefore(selected, e.target);
+    } else {
+      e.target.parentNode.insertBefore(selected, e.target.nextSibling);
+    }
+  }
+
+  /**
+   * Drag and drop: drag end.
+   */
+  function dragEnd() {
+    // reflect button order in buttonDefinitionEdit
+    if (selected !== null) {
+      /**
+       * @type {ButtonDefinition[]}
+       */
+      const orderedButtons = [];
+      const newOrder = selected.parentElement.children;
+      for (let btn of newOrder) {
+        const currId = btn.getAttribute('data-buttondefid');
+        orderedButtons.push(buttonDefinitionEdit.find((b) => b.id == currId));
+      }
+      buttonDefinitionEdit = orderedButtons;
+    }
+    selected = null;
+  }
+
+  /**
+   * Drag and drop: drag start.
+   * @param {DragEvent} e DragStart event.
+   */
+  function dragStart(e) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', null);
+    selected = e.target;
+  }
+
+  /**
+   * Drag and drop: element is before another element.
+   * @param {Element} el1 Element 1.
+   * @param {Element} el2 Element 2.
+   * @returns {boolean} Element 1 is before Element 2 in dom.
+   */
+  function isBefore(el1, el2) {
+    let cur;
+    if (el2.parentNode === el1.parentNode) {
+      for (cur = el1.previousSibling; cur; cur = cur.previousSibling) {
+        if (cur === el2) return true;
+      }
+    }
+    return false;
   }
 })();

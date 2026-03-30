@@ -1,28 +1,28 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import jsdoc from "eslint-plugin-jsdoc";
+import globals from 'globals';
+import pluginJs from '@eslint/js';
+import jsdoc from 'eslint-plugin-jsdoc';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
-  jsdoc.configs["flat/recommended"],
+  jsdoc.configs['flat/recommended'],
   {
-    files: ["**/*.js"],
+    files: ['**/*.js'],
     plugins: { jsdoc },
-    languageOptions: { sourceType: "script", globals: globals.browser },
+    languageOptions: { sourceType: 'script', globals: globals.browser },
     rules: {
-      "no-unused-vars": [
-        "error",
+      'no-unused-vars': [
+        'error',
         {
-          vars: "all",
-          args: "after-used",
+          vars: 'all',
+          args: 'after-used',
         },
       ],
-      "max-len": [
-        "error",
+      'max-len': [
+        'error',
         {
           code: 120,
           tabWidth: 2,
-          ignorePattern: "^.*(<svg|data:image/svg[+]xml).*$",
+          ignorePattern: '^.*(<svg|data:image/svg[+]xml).*$',
         },
       ],
     },
