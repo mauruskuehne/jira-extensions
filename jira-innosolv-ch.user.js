@@ -61,7 +61,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   // configuration menu item id
   const configMenuItemId = 'inno-config-lnk';
   // disable extension for these urls
-  const disabledUrls = ['/wiki/', '/plugins/'];
+  const disabledUrls = ['/wiki/', '/plugins/', '/jira/apps/'];
 
   const persistKeyJiraUser = 'jiraUserId';
   const persistKeyTempoDisabled = 'tempoDisabled';
