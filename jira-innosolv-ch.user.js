@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        JIRA Extensions
-// @version     2.0.19
+// @version     2.0.20
 // @namespace   https://github.com/mauruskuehne/jira-extensions/
 // @updateURL   https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
 // @downloadURL https://github.com/mauruskuehne/jira-extensions/raw/master/jira-innosolv-ch.user.js
@@ -383,8 +383,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     if (issueNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
       return 'feat';
     } else if (issueNumber.startsWith('EN')) {
-      const aenderungstyp = document.querySelector('[data-testid*="customfield_10142.field-inline-edit-state"]');
-      if (aenderungstyp && aenderungstyp.innerText == 'Anforderung') {
+      const aenderungstyp = document.querySelector(
+        '[data-testid*="issue-view-single-select-field.customfield_10142"] [data-testid*="option-color-picker.option-tag.default"]',
+      );
+      if (aenderungstyp && ['Anforderung', 'Migration neXt'].includes(aenderungstyp.innerText)) {
         return 'feat';
       }
     }
