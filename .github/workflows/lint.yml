@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  run fmt and lint:
+  run-fmt-and-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
