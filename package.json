@@ -1,19 +1,12 @@
 {
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.6.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^63.0.12",
-    "globals": "^17.7.0",
-    "prettier": "^3.9.4"
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0"
   },
   "scripts": {
-    "ci": "npm run prettier:check && npm run lint",
-    "lint": "eslint --report-unused-disable-directives --max-warnings 0",
-    "prettier:check": "prettier . --check",
-    "prettier:write": "prettier . --write"
-  },
-  "prettier": {
-    "singleQuote": true
+    "ci": "npm run fmt:check && npm run lint",
+    "lint": "oxlint --report-unused-disable-directives --deny-warnings",
+    "fmt:check": "oxfmt --check",
+    "fmt:write": "oxfmt"
   }
 }

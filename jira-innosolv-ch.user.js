@@ -21,12 +21,12 @@ https://gist.github.com/garrettheath4/129a2a70a2dcbfa0136efe43c52b820c
 https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 */
 
-/**
- * Ersetzungsvariablen Format:
- * {0} Vorgangsnummer (z.B. EN-121)
- * {1} Zusammenfassung (z.B. Erweiterung foobar)
- * {2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung oder G3-Vorgang, sonst "fix".
- */
+/*
+Ersetzungsvariablen Format:
+{0} Vorgangsnummer (z.B. EN-121)
+{1} Zusammenfassung (z.B. Erweiterung foobar)
+{2} Prefix für Commit (z.B. fix oder feat) -- "feat" bei Änderungstyp=Anforderung oder G3-Vorgang, sonst "fix".
+*/
 
 /* global GM_getValue, GM_setValue, GM_log, GM_xmlhttpRequest */
 (() => {
@@ -219,11 +219,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   class CachedTempoApproval {
     /**
      * @class CachedTempoApproval
-     * @param {string} cache datetime string of cache expiration
-     * @param {number} required number of seconds
-     * @param {number} logged number of seconds
-     * @param {string} statusKey status of period
-     * @param {string|null} errorText error text, if statusKey == "ERROR"
+     * @param {string} cache Datetime string of cache expiration
+     * @param {number} required Number of seconds
+     * @param {number} logged Number of seconds
+     * @param {string} statusKey Status of period
+     * @param {string | null} errorText Error text, if statusKey == "ERROR"
      */
     constructor(cache, required, logged, statusKey, errorText) {
       /** @type {string} */
@@ -234,7 +234,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
       this.logged = logged;
       /** @type {string} */
       this.statusKey = statusKey;
-      /** @type {string|null} */
+      /** @type {string | null} */
       this.errorText = errorText;
     }
   }
@@ -242,8 +242,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   class TempoPeriod {
     /**
      * @class TempoPeriod
-     * @param {string} from date string
-     * @param {string} to date string
+     * @param {string} from Date string
+     * @param {string} to Date string
      */
     constructor(from, to) {
       /** @type {string} */
@@ -259,9 +259,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   class TempoSchedule {
     /**
      * @class TempoSchedule
-     * @param {string} date date string
-     * @param {number} requiredSeconds required time in seconds
-     * @param {string} type schedule type
+     * @param {string} date Date string
+     * @param {number} requiredSeconds Required time in seconds
+     * @param {string} type Schedule type
      */
     constructor(date, requiredSeconds, type) {
       /** @type {string} */
@@ -276,10 +276,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   class ButtonDefinition {
     /**
      * @class ButtonDefinition
-     * @param {string} text display text of the button.
-     * @param {string} title title of the button.
-     * @param {string} format copy format of the button, including replacement variables {0}-{2}.
-     * @param {string} icon icon of the button. This overrides the "text" property.
+     * @param {string} text Display text of the button.
+     * @param {string} title Title of the button.
+     * @param {string} format Copy format of the button, including replacement variables {0}-{2}.
+     * @param {string} icon Icon of the button. This overrides the "text" property.
      */
     constructor(text, title, format, icon) {
       /** @type {string} */
@@ -297,14 +297,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Aktuell bearbeitete Liste von ButtonDefinition.
+   *
    * @type {ButtonDefinition[]}
    */
   let buttonDefinitionEdit = [];
 
   /**
    * Momentarily changes button background to green/red, to inform the user of the result of the process.
-   * @param {Event} e click event
-   * @param {boolean} success result of the process
+   *
+   * @param {Event} e Click event
+   * @param {boolean} success Result of the process
    */
   function flashCopiedMessage(e, success) {
     if (e) {
@@ -326,14 +328,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Jira issue data object
+   *
    * @typedef {object} jiraIssueData
-   * @property {string|undefined} title of jira issue
-   * @property {string|undefined} jiraNumber id of jira issue
-   * @property {'fix'|'feat'|undefined} prefix commit text prefix
+   * @property {string | undefined} title Of jira issue
+   * @property {string | undefined} jiraNumber Id of jira issue
+   * @property {'fix' | 'feat' | undefined} prefix Commit text prefix
    */
   /**
    * Gets the Title, JIRA "Number" (ID, such as SU-1000), and prefix.
-   * @returns {jiraIssueData} data of current jira issue.
+   *
+   * @returns {jiraIssueData} Data of current jira issue.
    */
   function getData() {
     const emptyData = {
@@ -375,9 +379,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets the commit prefix from issue number and issue title
-   * @param {string} issueNumber issue number
-   * @param {string} title issue title
-   * @returns {'feat'|'fix'} commit text prefix
+   *
+   * @param {string} issueNumber Issue number
+   * @param {string} title Issue title
+   * @returns {'feat' | 'fix'} Commit text prefix
    */
   function getPrefix(issueNumber, title) {
     if (issueNumber.startsWith('G3') && !title.startsWith('Issue: ')) {
@@ -395,8 +400,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets the Title, JIRA ID and title using the provided format.
-   * @param {string} format of the text
-   * @returns {string|false} formatted value or false if data could not be gathered.
+   *
+   * @param {string} format Of the text
+   * @returns {string | false} Formatted value or false if data could not be gathered.
    */
   function getDataAndFormat(format) {
     const fmt = format || '{0} {1}';
@@ -410,10 +416,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets the parent node with nodeName == `@name`
-   * @param {Element} node to search parent
-   * @param {string} name what to search for
-   * @param {number} search current search depth
-   * @returns {Element} parent node matching the name, or last node if not found.
+   *
+   * @param {Element} node To search parent
+   * @param {string} name What to search for
+   * @param {number} search Current search depth
+   * @returns {Element} Parent node matching the name, or last node if not found.
    */
   function searchParentOfType(node, name, search = 0) {
     // current node matches.
@@ -438,7 +445,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Click event for copy buttons.
-   * @param {Event} e click event
+   *
+   * @param {Event} e Click event
    */
   function buttonClicked(e) {
     e = e || window.event;
@@ -467,8 +475,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds a class to the classList of the node and removes this class from any siblings that have it assigned.
-   * @param {Element} node to handle.
-   * @param {string} className to clear from siblings and add to node.
+   *
+   * @param {Element} node To handle.
+   * @param {string} className To clear from siblings and add to node.
    */
   function setClassAndRemoveFromSiblings(node, className) {
     const matchingSiblings = node.parentNode.getElementsByClassName(className);
@@ -482,7 +491,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Click event for copy buttons in preview mode.
-   * @param {Event} e click event
+   *
+   * @param {Event} e Click event
    */
   function buttonClickedPreview(e) {
     e = e || window.event;
@@ -507,7 +517,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Deletes a button definition from buttonDefinitionEdit and updates preview buttons.
-   * @param {string} buttonId button definition to delete.
+   *
+   * @param {string} buttonId Button definition to delete.
    */
   function deleteButtonDefinition(buttonId) {
     buttonDefinitionEdit = buttonDefinitionEdit.filter((b) => b.id !== buttonId);
@@ -516,8 +527,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets button definition from buttonDefinitionEdit by id.
-   * @param {string} id button id
-   * @returns {ButtonDefinition} buttonDefinition with id
+   *
+   * @param {string} id Button id
+   * @returns {ButtonDefinition} ButtonDefinition with id
    */
   function getButtonDefinitionById(id) {
     return buttonDefinitionEdit.find((b) => b.id == id);
@@ -525,11 +537,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Creates a DOM Node with class and inner text.
+   *
    * @param {string} type DOM Element type
-   * @param {string|undefined} cls ClassName of element
-   * @param {string|undefined} txt InnerText of element
-   * @param {string|undefined} id ID of element
-   * @param {string|undefined} title Title of element
+   * @param {string | undefined} cls ClassName of element
+   * @param {string | undefined} txt InnerText of element
+   * @param {string | undefined} id ID of element
+   * @param {string | undefined} title Title of element
    * @returns {Element} DOM Element
    */
   function createNode(type, cls, txt, id, title) {
@@ -551,8 +564,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Creates an edit form for a custom button.
-   * @param {Element} node container to add the edit form or error message to.
-   * @param {ButtonDefinition|string} buttonDefinition definition of button, or error message string.
+   *
+   * @param {Element} node Container to add the edit form or error message to.
+   * @param {ButtonDefinition | string} buttonDefinition Definition of button, or error message string.
    */
   function makeButtonEditForm(node, buttonDefinition) {
     // clean edit dialog children
@@ -631,14 +645,15 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds a label and input element to the (button-) edit dialog.
-   * @param {Element} node container to add the label and input to.
-   * @param {string} id node id for input element.
-   * @param {string} title of the label.
-   * @param {string|undefined} subtitle of the label.
-   * @param {string} value of the input element.
-   * @param {boolean} specialChars handle special chars like \t \r \n
-   * @param {string} buttonDefId button definition id
-   * @param {(btnDef:ButtonDefinition, newValue:string) => void} onChangeFn onChange function
+   *
+   * @param {Element} node Container to add the label and input to.
+   * @param {string} id Node id for input element.
+   * @param {string} title Of the label.
+   * @param {string | undefined} subtitle Of the label.
+   * @param {string} value Of the input element.
+   * @param {boolean} specialChars Handle special chars like \t \r \n
+   * @param {string} buttonDefId Button definition id
+   * @param {(btnDef: ButtonDefinition, newValue: string) => void} onChangeFn OnChange function
    */
   function addLabelAndInput(node, id, title, subtitle, value, specialChars, buttonDefId, onChangeFn) {
     if (subtitle === undefined) {
@@ -667,9 +682,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * transforms special characters like \t \r or \n to readable/editable characters.
-   * @param {string} value string containing original value including tab and line-feed characters.
-   * @returns {string} formatted value with readable tab and line-feed characters.
+   * Transforms special characters like \t \r or \n to readable/editable characters.
+   *
+   * @param {string} value String containing original value including tab and line-feed characters.
+   * @returns {string} Formatted value with readable tab and line-feed characters.
    */
   function transformSpecialChars(value) {
     const tab = value.split('\t').join('\\t');
@@ -678,9 +694,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * reverses transform of editable characters like \\t \\r or \\n back to special characters (see above).
-   * @param {string} value string containing readable tab and line-feed characters.
-   * @returns {string} formatted value with special tab and line-feed characters.
+   * Reverses transform of editable characters like \\t \\r or \\n back to special characters (see above).
+   *
+   * @param {string} value String containing readable tab and line-feed characters.
+   * @returns {string} Formatted value with special tab and line-feed characters.
    */
   function revTransformSpecialChars(value) {
     const tab = value.split('\\t').join('\t');
@@ -690,7 +707,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks the location.pathname for ignored patterns (disabledUrls). Returns true if it matches.
-   * @returns {boolean} current location path should be ignored.
+   *
+   * @returns {boolean} Current location path should be ignored.
    */
   function isIgnoredPath() {
     // disable extension for certain urls (confluence, tempo)
@@ -699,9 +717,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * Returns the currently stored button definitions or default definitions.
-   * Checks migration status and migrates old button definitions (extraButtons) to new format.
-   * @returns {Promise<ButtonDefinition[]>} button definitions.
+   * Returns the currently stored button definitions or default definitions. Checks migration status and migrates old
+   * button definitions (extraButtons) to new format.
+   *
+   * @returns {Promise<ButtonDefinition[]>} Button definitions.
    */
   function getButtonDefinitions() {
     return new Promise((resolve, reject) => {
@@ -727,9 +746,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Creates extension button for custom "copy" commands.
-   * @param {ButtonDefinition} buttondef button definition.
-   * @param {boolean} preview create preview of button.
-   * @returns {Element} button node.
+   *
+   * @param {ButtonDefinition} buttondef Button definition.
+   * @param {boolean} preview Create preview of button.
+   * @returns {Element} Button node.
    */
   function createButton(buttondef, preview) {
     const btn = createNode('button', 'inno-btn', undefined, undefined, buttondef.title);
@@ -757,8 +777,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds configured copy buttons and styling to node.
-   * @param {Element} node container to add the buttons to.
-   * @param {boolean} preview preparation for configuration dialog
+   *
+   * @param {Element} node Container to add the buttons to.
+   * @param {boolean} preview Preparation for configuration dialog
    */
   async function addCopyButtons(node, preview = false) {
     if (isIgnoredPath()) {
@@ -778,9 +799,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
-  /**
-   * Updates preview buttons according to buttonDefinitionEdit.
-   */
+  /** Updates preview buttons according to buttonDefinitionEdit. */
   function updatePreviewButtons() {
     const prevNode = document.getElementById(innoButtonPreviewId);
     if (!prevNode) {
@@ -800,7 +819,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds Tempo integration label to header
-   * @param {Element} node container for label
+   *
+   * @param {Element} node Container for label
    */
   function addTempoIntegration(node) {
     if (isIgnoredPath()) {
@@ -824,7 +844,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Update label with data from API.
-   * @param {Element} node label to update.
+   *
+   * @param {Element} node Label to update.
    */
   function updateTempo(node) {
     if (!isTempoDisabled()) {
@@ -851,7 +872,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if css variable "--ds-text" is set in the :root element.
-   * @returns {boolean} css variable is present.
+   *
+   * @returns {boolean} Css variable is present.
    */
   function checkForCssVar() {
     const styles = getComputedStyle(document.querySelector(':root'));
@@ -864,7 +886,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks if tempo integration is disabled.
-   * @returns {boolean} tempo integration is disabled.
+   *
+   * @returns {boolean} Tempo integration is disabled.
    */
   function isTempoDisabled() {
     return GM_getValue(persistKeyTempoDisabled, false) == true;
@@ -872,7 +895,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores the state of "tempoDisabled".
-   * @param {boolean} disabled state.
+   *
+   * @param {boolean} disabled State.
    */
   function setTempoDisabled(disabled) {
     GM_setValue(persistKeyTempoDisabled, disabled);
@@ -880,7 +904,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores the tempo access token for the api.
-   * @param {string} token to access tempo api.
+   *
+   * @param {string} token To access tempo api.
    */
   function setTempoToken(token) {
     GM_setValue(persistKeyTempoToken, token);
@@ -888,7 +913,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks if tempo token allows getting the user's schedule information
-   * @returns {boolean} tempo token allows requesting user's schedule information
+   *
+   * @returns {boolean} Tempo token allows requesting user's schedule information
    */
   function getTempoTokenAllowsSchedule() {
     return GM_getValue(persistKeyTempoTokenAllowsSchedule, true) == true;
@@ -896,7 +922,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores, wether the tempo token allowed accessing the user's schedule information
-   * @param {boolean} isAllowed user's schedule was retrieved successfully
+   *
+   * @param {boolean} isAllowed User's schedule was retrieved successfully
    */
   function setTempoTokenAllowsSchedule(isAllowed) {
     GM_setValue(persistKeyTempoTokenAllowsSchedule, isAllowed);
@@ -904,9 +931,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Fetches data from tempo API.
-   * @param {string} relativeUrl relative URL.
-   * @param {string|undefined} withToken use specific token.
-   * @returns {Promise<unknown>} data.
+   *
+   * @param {string} relativeUrl Relative URL.
+   * @param {string | undefined} withToken Use specific token.
+   * @returns {Promise<unknown>} Data.
    */
   function fetchData(relativeUrl, withToken) {
     return new Promise((resolve, reject) => {
@@ -933,8 +961,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if the provided token can access the tempo api, stores the token on success.
-   * @param {string} token to check and store if request was successful.
-   * @returns {Promise<boolean|string>} success state. If string is returned, it contains the "yes, but" reason.
+   *
+   * @param {string} token To check and store if request was successful.
+   * @returns {Promise<boolean | string>} Success state. If string is returned, it contains the "yes, but" reason.
    */
   function checkAndStoreTempoToken(token) {
     // eslint-disable-next-line no-async-promise-executor
@@ -967,6 +996,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Checks, if the configuration for tempo integration is complete.
+   *
    * @returns {boolean} Configuration is complete.
    */
   function isTempoConfigured() {
@@ -980,8 +1010,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Get string formatted date.
-   * @param {Date} date to translate.
-   * @returns {string} date in the format of "yyyy-MM-dd".
+   *
+   * @param {Date} date To translate.
+   * @returns {string} Date in the format of "yyyy-MM-dd".
    */
   function getYMD(date) {
     return `${date.getFullYear()}-${lZero(date.getMonth() + 1)}-${lZero(date.getDate())}`;
@@ -989,8 +1020,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Get Date object from date string.
-   * @param {string} date date string in format of "yyyy-MM-dd".
-   * @returns {Date} date object.
+   *
+   * @param {string} date Date string in format of "yyyy-MM-dd".
+   * @returns {Date} Date object.
    */
   function getDateFromString(date) {
     return new Date(date.slice(0, 4), Number(date.slice(-5).slice(0, 2)) - 1, date.slice(-2));
@@ -998,8 +1030,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Adds a leading zero if needed.
-   * @param {number} num number to add a leading zero to.
-   * @returns {string} number with leading zero.
+   *
+   * @param {number} num Number to add a leading zero to.
+   * @returns {string} Number with leading zero.
    */
   function lZero(num) {
     return String(num).padStart(2, '0');
@@ -1007,8 +1040,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gathers approval data (past 3 periods) from tempo API and displays it.
-   * @param {Element} node container for display.
-   * @param {boolean} forceUpdate force update (ignore cache).
+   *
+   * @param {Element} node Container for display.
+   * @param {boolean} forceUpdate Force update (ignore cache).
    */
   async function getTempoData(node, forceUpdate) {
     try {
@@ -1027,7 +1061,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
         return;
       }
 
-      /** @type {TempoPeriod|null} */
+      /** @type {TempoPeriod | null} */
       let nowPeriod = null;
       if (now.getDay() == 1 || now.getDay() == 2) {
         // Mon/Tue => ignore last (current) period.
@@ -1122,9 +1156,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Returns the default properties object for a XMLHttp "GET" request.
-   * @param {string} relativeUrl relative request url.
-   * @param {string|undefined} withToken use a specific token (optional).
-   * @returns {object} default properties for XMLHttp Request.
+   *
+   * @param {string} relativeUrl Relative request url.
+   * @param {string | undefined} withToken Use a specific token (optional).
+   * @returns {object} Default properties for XMLHttp Request.
    */
   function getPropsForGetRequest(relativeUrl, withToken) {
     return {
@@ -1140,10 +1175,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets available "periods" from tempo api.
-   * @param {Date} now current Date (for easeier access).
-   * @param {boolean} forceUpdate forces update (ignore cache).
-   * @param {string} withToken forces http request with this token, ignores cache.
-   * @returns {Promise<TempoPeriod[]>} tempo periods within the past month.
+   *
+   * @param {Date} now Current Date (for easeier access).
+   * @param {boolean} forceUpdate Forces update (ignore cache).
+   * @param {string} withToken Forces http request with this token, ignores cache.
+   * @returns {Promise<TempoPeriod[]>} Tempo periods within the past month.
    */
   async function getTempoPeriods(now, forceUpdate, withToken) {
     const cachedPeriods = GM_getValue(persistKeyTempoPeriods, {
@@ -1183,10 +1219,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Returns css class name for period, according to status.
-   * @param {boolean} isCurrentWeek period is the current week.
-   * @param {boolean} isTooOld period is too old.
-   * @param {boolean} missingLessThanADay period is missing less than a day's time.
-   * @returns {string} css class name for display.
+   *
+   * @param {boolean} isCurrentWeek Period is the current week.
+   * @param {boolean} isTooOld Period is too old.
+   * @param {boolean} missingLessThanADay Period is missing less than a day's time.
+   * @returns {string} Css class name for display.
    */
   function getClassForPeriod(isCurrentWeek, isTooOld, missingLessThanADay) {
     if (isCurrentWeek) {
@@ -1206,11 +1243,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets Workload (required time per day) for current user.
-   * @param {TempoPeriod} period current period.
-   * @param {boolean} forceUpdate ignore cache, force update.
-   * @param {Date} now now Date, for easy access.
-   * @param {string|undefined} token use this token for request.
-   * @returns {Promise<TempoSchedule[]>} tempo schedule for user.
+   *
+   * @param {TempoPeriod} period Current period.
+   * @param {boolean} forceUpdate Ignore cache, force update.
+   * @param {Date} now Now Date, for easy access.
+   * @param {string | undefined} token Use this token for request.
+   * @returns {Promise<TempoSchedule[]>} Tempo schedule for user.
    */
   async function getSchedule(period, forceUpdate, now, token) {
     return new Promise((resolve, reject) => {
@@ -1269,15 +1307,16 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * Returns the number of required seconds for the current period.
-   * If useScheduleTime is false, the requiredFromApproval is always returned.
-   * If useScheduleTime is true, the time is calculated from the user's schedule.
-   * @param {number} requiredFromApproval required time from approvalStatus.
-   * @param {boolean} useScheduleTime use schedule to get required seconds until today.
-   * @param {TempoPeriod} period current period.
-   * @param {boolean} forceUpdate force update, ignore cache.
-   * @param {Date} now now Date for easy access.
-   * @returns {Promise<number>} required seconds for period.
+   * Returns the number of required seconds for the current period. If useScheduleTime is false, the
+   * requiredFromApproval is always returned. If useScheduleTime is true, the time is calculated from the user's
+   * schedule.
+   *
+   * @param {number} requiredFromApproval Required time from approvalStatus.
+   * @param {boolean} useScheduleTime Use schedule to get required seconds until today.
+   * @param {TempoPeriod} period Current period.
+   * @param {boolean} forceUpdate Force update, ignore cache.
+   * @param {Date} now Now Date for easy access.
+   * @returns {Promise<number>} Required seconds for period.
    */
   async function getRequiredTime(requiredFromApproval, useScheduleTime, period, forceUpdate, now) {
     if (useScheduleTime) {
@@ -1302,10 +1341,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets approval status of one period.
-   * @param {TempoPeriod} period current period.
-   * @param {boolean} forceUpdate force update (ignore cache).
-   * @param {Date} now current Date for easier access.
-   * @returns {Promise<CachedTempoApproval>} approval status of period.
+   *
+   * @param {TempoPeriod} period Current period.
+   * @param {boolean} forceUpdate Force update (ignore cache).
+   * @param {Date} now Current Date for easier access.
+   * @returns {Promise<CachedTempoApproval>} Approval status of period.
    */
   async function getApprovalStatus(period, forceUpdate, now) {
     const approvals = getApprovalStatusAll();
@@ -1342,7 +1382,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Gets all approval statuses from storage.
-   * @returns {object} all approvals from TamperMonkey storage.
+   *
+   * @returns {object} All approvals from TamperMonkey storage.
    */
   function getApprovalStatusAll() {
     return GM_getValue(persistKeyTempoApprovals, {});
@@ -1350,8 +1391,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Stores the approval data.
-   * @param {string} key for storage.
-   * @param {CachedTempoApproval} approval data.
+   *
+   * @param {string} key For storage.
+   * @param {CachedTempoApproval} approval Data.
    */
   function saveApprovalStatus(key, approval) {
     const approvals = getApprovalStatusAll();
@@ -1361,7 +1403,8 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Removes old data from the "tempoApprovals" local storage object.
-   * @param {Array<string>} periodsSeen periods that have been iterated through.
+   *
+   * @param {string[]} periodsSeen Periods that have been iterated through.
    */
   function cleanupApprovalStatus(periodsSeen) {
     const approvals = getApprovalStatusAll();
@@ -1377,9 +1420,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
-  /**
-   * Checks configuration values for changes, saves configuration and closes the dialog.
-   */
+  /** Checks configuration values for changes, saves configuration and closes the dialog. */
   function saveAndCloseInnoExtensionConfigDialog() {
     let changed = false;
     const integrationEnabledElement = document.getElementById('tempoIntegrationEnabled');
@@ -1402,8 +1443,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * checks if click originated from target to avoid closing dialog on click in children and closes config dialog.
-   * @param {Event} e click event.
+   * Checks if click originated from target to avoid closing dialog on click in children and closes config dialog.
+   *
+   * @param {Event} e Click event.
    */
   function closeInnoExtensionConfigCheckTarget(e) {
     if (this === e.target) {
@@ -1411,9 +1453,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
-  /**
-   * Closes the configuration dialog.
-   */
+  /** Closes the configuration dialog. */
   function closeInnoExtensionConfigDialog() {
     const dlg = document.getElementById(extConfigDialogId);
     if (dlg) {
@@ -1423,9 +1463,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Toggles class name on node.
-   * @param {Element} node to toggle class
-   * @param {string} className to add or remove
-   * @param {boolean|undefined} addCond condition to add/remove class
+   *
+   * @param {Element} node To toggle class
+   * @param {string} className To add or remove
+   * @param {boolean | undefined} addCond Condition to add/remove class
    */
   function toggleClass(node, className, addCond) {
     if (node) {
@@ -1442,8 +1483,9 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Shows the configuration dialog.
-   * @param {Event} e click event.
-   * @returns {boolean} false (to avoid following the link).
+   *
+   * @param {Event} e Click event.
+   * @returns {boolean} False (to avoid following the link).
    */
   function showInnoExtensionConfigDialog(e) {
     if (!document.getElementById(extConfigDialogId)) {
@@ -1557,9 +1599,10 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
   }
 
   /**
-   * Adds extension configuration button to profile menu in jira.
-   * Bonus: Gets and stores the current user's id for Tempo queries.
-   * @param {Element} node container to add configuration button.
+   * Adds extension configuration button to profile menu in jira. Bonus: Gets and stores the current user's id for Tempo
+   * queries.
+   *
+   * @param {Element} node Container to add configuration button.
    */
   function addInnoExtensionConfigMenuItem(node) {
     if (isIgnoredPath()) {
@@ -1587,10 +1630,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   // source: https://gist.github.com/mjblay/18d34d861e981b7785e407c3b443b99b#file-waitforkeyelements-js
   /**
-   * A utility function for Greasemonkey scripts, to detect and handle AJAXed content.
-   * Forked for use without JQuery.
-   * @param {string} selectorTxt jQuery selector that specifies the desired element(s).
-   * @param {(node: Element) => void} actionFunction code to run when elements are found. It is passed as node to the matched element.
+   * A utility function for Greasemonkey scripts, to detect and handle AJAXed content. Forked for use without JQuery.
+   *
+   * @param {string} selectorTxt JQuery selector that specifies the desired element(s).
+   * @param {(node: Element) => void} actionFunction Code to run when elements are found. It is passed as node to the
+   *   matched element.
    * @param {boolean} bWaitOnce If false, will continue to scan for new elements even after the first match is found.
    */
   function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce) {
@@ -1653,13 +1697,12 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   // drag and drop functions
   // source: https://codepen.io/crouchingtigerhiddenadam/pen/qKXgap
-  /**
-   * @type {Element|null} dragged node
-   */
+  /** @type {Element | null} dragged node */
   let selected = null;
 
   /**
    * Drag and drop: drag over.
+   *
    * @param {DragEvent} e DragOver event.
    */
   function dragOver(e) {
@@ -1674,15 +1717,11 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
     }
   }
 
-  /**
-   * Drag and drop: drag end.
-   */
+  /** Drag and drop: drag end. */
   function dragEnd() {
     // reflect button order in buttonDefinitionEdit
     if (selected !== null) {
-      /**
-       * @type {ButtonDefinition[]}
-       */
+      /** @type {ButtonDefinition[]} */
       const orderedButtons = [];
       const newOrder = selected.parentElement.children;
       for (let btn of newOrder) {
@@ -1696,6 +1735,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Drag and drop: drag start.
+   *
    * @param {DragEvent} e DragStart event.
    */
   function dragStart(e) {
@@ -1706,6 +1746,7 @@ https://gist.github.com/dennishall/6cb8487f6ee8a3705ecd94139cd97b45
 
   /**
    * Drag and drop: element is before another element.
+   *
    * @param {Element} el1 Element 1.
    * @param {Element} el2 Element 2.
    * @returns {boolean} Element 1 is before Element 2 in dom.
