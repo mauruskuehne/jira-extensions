@@ -1,7 +1,7 @@
 {
   "devDependencies": {
-    "oxfmt": "^0.75.0",
-    "oxlint": "^1.90.0"
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0"
   },
   "scripts": {
     "ci": "npm run fmt:check && npm run lint",
